@@ -358,6 +358,9 @@ void main()
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
     f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
+    f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
+    f_clearcoat = mix(f_clearcoat, f_clearcoat * ao, u_OcclusionStrength);
+    f_sheen = mix(f_sheen, f_sheen * ao, u_OcclusionStrength);
 #endif
 
 #ifdef USE_PUNCTUAL
