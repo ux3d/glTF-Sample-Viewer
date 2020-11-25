@@ -357,7 +357,7 @@ void main()
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
     ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
-    f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
+    f_specular = mix(f_specular, f_specular * ao, u_OcclusionStrength);
     f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
     f_clearcoat = mix(f_clearcoat, f_clearcoat * ao, u_OcclusionStrength);
     f_sheen = mix(f_sheen, f_sheen * ao, u_OcclusionStrength);
