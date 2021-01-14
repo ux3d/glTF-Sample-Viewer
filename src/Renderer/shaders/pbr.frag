@@ -122,7 +122,7 @@ NormalInfo getNormalInfo(vec3 v)
 
     // Compute pertubed normals:
     #ifdef HAS_NORMAL_MAP
-        n = texture(u_NormalSampler, UV).rgb * 2.0 - vec3(1.0);
+        n = getNormal().rgb * 2.0 - vec3(1.0);
         n *= vec3(u_NormalScale, u_NormalScale, 1.0);
         n = mat3(t, b, ng) * normalize(n);
     #else
@@ -137,7 +137,7 @@ NormalInfo getNormalInfo(vec3 v)
     return info;
 }
 
-vec4 getBaseColor()
+vec4 getBaseColorOrDiffuse()
 {
     vec4 baseColor = vec4(1.0, 1.0, 1.0, 1.0);
 
@@ -148,9 +148,9 @@ vec4 getBaseColor()
     #endif
 
     #if defined(MATERIAL_SPECULARGLOSSINESS) && defined(HAS_DIFFUSE_MAP)
-        baseColor *= sRGBToLinear(texture(u_DiffuseSampler, getDiffuseUV()));
+        baseColor *= getDiffuse();
     #elif defined(MATERIAL_METALLICROUGHNESS) && defined(HAS_BASE_COLOR_MAP)
-        baseColor *= sRGBToLinear(texture(u_BaseColorSampler, getBaseColorUV()));
+        baseColor *= getBaseColor();
     #endif
 
     return baseColor * getVertexColor();
@@ -162,7 +162,7 @@ MaterialInfo getSpecularGlossinessInfo(MaterialInfo info)
     info.perceptualRoughness = u_GlossinessFactor;
 
 #ifdef HAS_SPECULAR_GLOSSINESS_MAP
-    vec4 sgSample = sRGBToLinear(texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV()));
+    vec4 sgSample = getSpecularGlossiness();
     info.perceptualRoughness *= sgSample.a ; // glossiness to roughness
     info.f0 *= sgSample.rgb; // specular
 #endif // ! HAS_SPECULAR_GLOSSINESS_MAP
@@ -181,7 +181,7 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
+    vec4 mrSample = getMetallicRoughness();
     info.perceptualRoughness *= mrSample.g;
     info.metallic *= mrSample.b;
 #endif
@@ -201,12 +201,12 @@ MaterialInfo getSheenInfo(MaterialInfo info)
     info.sheenRoughnessFactor = u_SheenRoughnessFactor;
 
     #ifdef HAS_SHEEN_COLOR_MAP
-        vec4 sheenColorSample = texture(u_SheenColorSampler, getSheenColorUV());
+        vec4 sheenColorSample = getSheenColor();
         info.sheenColorFactor *= sheenColorSample.rgb;
     #endif
 
     #ifdef HAS_SHEEN_ROUGHNESS_MAP
-        vec4 sheenRoughnessSample = texture(u_SheenRoughnessSampler, getSheenRoughnessUV());
+        vec4 sheenRoughnessSample = getSheenRoughness();
         info.sheenRoughnessFactor *= sheenRoughnessSample.a;
     #endif
 
@@ -219,7 +219,7 @@ MaterialInfo getTransmissionInfo(MaterialInfo info)
     info.transmissionFactor = u_TransmissionFactor;
 
     #ifdef HAS_TRANSMISSION_MAP
-        vec4 transmissionSample = texture(u_TransmissionSampler, getTransmissionUV());
+        vec4 transmissionSample = getTransmission();
         info.transmissionFactor *= transmissionSample.a;
     #endif
 
@@ -235,17 +235,17 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo, float f0
     info.clearcoatF90 = vec3(1.0);
 
     #ifdef HAS_CLEARCOAT_TEXTURE_MAP
-        vec4 clearcoatSample = texture(u_ClearcoatSampler, getClearcoatUV());
+        vec4 clearcoatSample = getClearcoat();
         info.clearcoatFactor *= clearcoatSample.r;
     #endif
 
     #ifdef HAS_CLEARCOAT_ROUGHNESS_MAP
-        vec4 clearcoatSampleRoughness = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+        vec4 clearcoatSampleRoughness = getClearcoatRoughness();
         info.clearcoatRoughness *= clearcoatSampleRoughness.g;
     #endif
 
     #ifdef HAS_CLEARCOAT_NORMAL_MAP
-        vec4 clearcoatSampleNormal = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+        vec4 clearcoatSampleNormal = getClearcoatNormal();
         info.clearcoatNormal = normalize(clearcoatSampleNormal.xyz);
     #else
         info.clearcoatNormal = normalInfo.ng;
@@ -263,7 +263,7 @@ float albedoSheenScalingLUT(float NdotV, float sheenRoughnessFactor)
 
 void main()
 {
-    vec4 baseColor = getBaseColor();
+    vec4 baseColor = getBaseColorOrDiffuse();
 
 #ifdef ALPHAMODE_OPAQUE
     baseColor.a = 1.0;
@@ -356,7 +356,7 @@ void main()
     float ao = 1.0;
     // Apply optional PBR terms for additional (optional) shading
 #ifdef HAS_OCCLUSION_MAP
-    ao = texture(u_OcclusionSampler,  getOcclusionUV()).r;
+    ao = getOcclusion().r;
     f_diffuse = mix(f_diffuse, f_diffuse * ao, u_OcclusionStrength);
 #endif
 
@@ -421,7 +421,7 @@ void main()
 
     f_emissive = u_EmissiveFactor;
 #ifdef HAS_EMISSIVE_MAP
-    f_emissive *= sRGBToLinear(texture(u_EmissiveSampler, getEmissiveUV())).rgb;
+    f_emissive *= getEmissive().rgb;
 #endif
 
     vec3 color = vec3(0);
@@ -474,7 +474,7 @@ void main()
 
     #ifdef DEBUG_NORMAL
         #ifdef HAS_NORMAL_MAP
-            g_finalColor.rgb = texture(u_NormalSampler, getNormalUV()).rgb;
+            g_finalColor.rgb = getNormal().rgb;
         #else
             g_finalColor.rgb = vec3(0.5, 0.5, 1.0);
         #endif

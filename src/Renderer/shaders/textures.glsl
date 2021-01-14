@@ -201,3 +201,121 @@ vec2 getTransmissionUV()
     #endif
     return uv.xy;
 }
+
+
+vec4 getNormal()
+{
+    vec4 result = texture(u_NormalSampler, getNormalUV());
+    #ifdef NORMAL_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getEmissive()
+{
+    vec4 result = texture(u_EmissiveSampler, getEmissiveUV());
+    #ifdef EMISSIVE_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getOcclusion()
+{
+    vec4 result = texture(u_OcclusionSampler,  getOcclusionUV());
+    #ifdef OCCLUSION_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getBaseColor()
+{
+    vec4 result = texture(u_BaseColorSampler, getBaseColorUV());
+    #ifdef BASECOLOR_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getMetallicRoughness()
+{
+    vec4 result = texture(u_MetallicRoughnessSampler, getMetallicRoughnessUV());
+    #ifdef METALLICROUGHNESS_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getSpecularGlossiness()
+{
+    vec4 result = texture(u_SpecularGlossinessSampler, getSpecularGlossinessUV());
+    #ifdef SPECULARGLOSSINESS_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getDiffuse()
+{
+    vec4 result = texture(u_DiffuseSampler, getDiffuseUV());
+    #ifdef DIFFUSE_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getClearcoat()
+{
+    vec4 result = texture(u_ClearcoatSampler, getClearcoatUV());
+    #ifdef CLEARCOAT_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getClearcoatRoughness()
+{
+    vec4 result = texture(u_ClearcoatRoughnessSampler, getClearcoatRoughnessUV());
+    #ifdef CLEARCOATROUGHNESS_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getClearcoatNormal()
+{
+    vec4 result = texture(u_ClearcoatNormalSampler, getClearcoatNormalUV());
+    #ifdef CLEARCOATNORMAL_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getSheenColor()
+{
+    vec4 result = texture(u_SheenColorSampler, getSheenColorUV());
+    #ifdef SHEENCOLOR_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getSheenRoughness()
+{
+    vec4 result = texture(u_SheenRoughnessSampler, getSheenRoughnessUV());
+    #ifdef SHEENROUGHNESS_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
+
+vec4 getTransmission()
+{
+    vec4 result = texture(u_TransmissionSampler, getTransmissionUV());
+    #ifdef TRANSMISSION_IS_SRGB
+    result = sRGBToLinear(result);
+    #endif
+    return result;
+}
