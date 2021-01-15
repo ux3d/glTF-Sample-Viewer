@@ -56,6 +56,8 @@ async function main()
         const scene = state.gltf.scenes[state.sceneIndex];
         scene.applyTransformHierarchy(state.gltf);
         computePrimitiveCentroids(state.gltf);
+        // select user camera
+        state.cameraIndex = undefined;
         state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
         state.userCamera.updatePosition();
     }));
@@ -153,6 +155,7 @@ async function main()
     });
 
     uiModel.attachGltfLoaded(gltfLoadedMulticast);
+    uiModel.attachGeneralObservables(sceneChangedObservable);
     uiModel.updateStatistics(statisticsUpdateObservable);
     gltfLoadedMulticast.connect();
 

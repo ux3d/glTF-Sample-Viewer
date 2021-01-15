@@ -76,18 +76,7 @@ class UIModel
         );
 
         const cameraIndices = this.scene.pipe(map( scene => {
-            let cameraIndices = [{title: "User Camera"}];
-            const gltf = state.gltf;
-            cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                if(gltf.scenes[scene].includesNode(gltf, camera.node))
-                {
-                    return {title: index};
-                }
-            }));
-            cameraIndices = cameraIndices.filter(function(el) {
-                return el !== undefined;
-            });
-            return cameraIndices;
+            return this.getCameras(scene);
         }));
         cameraIndices.subscribe( (cameras) => {
             this.app.cameras = cameras;
@@ -162,17 +151,7 @@ class UIModel
 
         const cameraIndices = gltfLoadedAndInit.pipe(
             map( (gltf) => {
-                let cameraIndices = [{title: "User Camera"}];
-                cameraIndices.push(...gltf.cameras.map( (camera, index) => {
-                    if(gltf.scenes[this.state.sceneIndex].includesNode(gltf, camera.node))
-                    {
-                        return {title: index};
-                    }
-                }));
-                cameraIndices = cameraIndices.filter(function(el) {
-                    return el !== undefined;
-                });
-                return cameraIndices;
+                return this.getCameras(this.state.sceneIndex);
             })
         );
         cameraIndices.subscribe( (cameras) => {
@@ -217,17 +196,53 @@ class UIModel
         });
     }
 
+    attachGeneralObservables(sceneChangedObservable)
+    {
+        sceneChangedObservable.pipe(map(_ => {
+            return this.state.cameraIndex;
+        })
+        );
+        sceneChangedObservable.subscribe( (cameraIndex) => {
+            if(cameraIndex == undefined)
+            {
+                cameraIndex = "User Camera";
+            }
+            this.app.setSelectedCamera(cameraIndex);
+        });
+    }
+
     updateStatistics(statisticsUpdateObservable)
     {
         statisticsUpdateObservable.subscribe(
-            data => {this.app.statistics = [
-                    {title: "Mesh Count", value: data.meshCount},
-                    {title: "Triangle Count", value: data.faceCount},
-                    {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
-                    {title: "Transparent Material Count", value: data.transparentMaterialsCount}
-                ]
+            data => {this.app.statistics =
+            [
+                {title: "Mesh Count", value: data.meshCount},
+                {title: "Triangle Count", value: data.faceCount},
+                {title: "Opaque Material Count", value: data.opaqueMaterialsCount},
+                {title: "Transparent Material Count", value: data.transparentMaterialsCount}
+            ];
             }
-        )
+        );
+    }
+
+    getCameras(cameraIndex)
+    {
+        let cameraIndices = [{title: "User Camera"}];
+        const gltf = this.state.gltf;
+        if(gltf === undefined)
+        {
+            return cameraIndices;
+        }
+        cameraIndices.push(...gltf.cameras.map( (camera, index) => {
+            if(gltf.scenes[cameraIndex].includesNode(gltf, camera.node))
+            {
+                return {title: index};
+            }
+        }));
+        cameraIndices = cameraIndices.filter(function(el) {
+            return el !== undefined;
+        });
+        return cameraIndices;
     }
 }
 

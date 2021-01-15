@@ -165,6 +165,9 @@ Vue.component('tab-models', {
         },
         setSelectedScene: function(value) {
             this.$refs.sceneselection.setSelection(value);
+        },
+        setSelectedCamera: function(value) {
+            this.$refs.cameraselection.setSelection(value);
         }
     }
 });
@@ -289,6 +292,10 @@ const app = new Vue({
         setSelectedScene: function(value)
         {
             this.$refs.tabmodels.setSelectedScene(value);
+        },
+        setSelectedCamera: function(value)
+        {
+            this.$refs.tabmodels.setSelectedCamera(value);
         },
         setSelectedClearColor: function(value)
         {

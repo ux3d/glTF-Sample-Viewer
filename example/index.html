@@ -131,7 +131,7 @@ function getUrlParam(parameter, defaultvalue){
         <drop-down-element v-on:selectionchanged="modelchanged" name="Model" v-bind:dropdowncontent="models" ref="modelselection"></drop-down-element>
         <!--<drop-down-element v-on:selectionchanged="flavourchanged" name="Flavors" v-bind:dropdowncontent="flavors"></drop-down-element>-->
         <drop-down-element v-on:selectionchanged="scenechanged" name="Scene Index" v-bind:dropdowncontent="scenes" ref="sceneselection"></drop-down-element>
-        <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras"></drop-down-element>
+        <drop-down-element v-on:selectionchanged="camerachanged" name="Camera Index" v-bind:dropdowncontent="cameras" ref="cameraselection"></drop-down-element>
         <label class="label">Variants</label>
         <radio-button-list-element v-on:selectionchanged="variantchanged" name="Material Variants"
                                     v-bind:radiobuttoncontent="materialvariants"></radio-button-list-element>
