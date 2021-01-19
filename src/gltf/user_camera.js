@@ -34,6 +34,19 @@ class UserCamera extends gltfCamera
         };
     }
 
+    setPosition(position)
+    {
+        this.position = position;
+        this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
+    }
+
+    pitchYaw(xRot, yRot)
+    {
+        this.xRot = xRot;
+        this.yRot = yRot;
+        this.yRot = clamp(this.yRot, -yMax, yMax);
+    }
+
     updatePosition()
     {
         // calculate direction from focus to camera (assuming camera is at positive z)
