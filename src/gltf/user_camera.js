@@ -15,6 +15,7 @@ class UserCamera extends gltfCamera
         up = [0, 1, 0],
         xRot = 0,
         yRot = 0,
+        zRot = 0,
         zoom = 1)
     {
         super();
@@ -40,10 +41,12 @@ class UserCamera extends gltfCamera
         this.fitCameraPlanesToExtents(this.sceneExtents.min, this.sceneExtents.max);
     }
 
-    pitchYaw(xRot, yRot)
+    rollPitchYaw(zRot, xRot, yRot)
     {
+        const yMax = Math.PI / 2 - 0.01;
         this.xRot = xRot;
         this.yRot = yRot;
+        this.zRot = zRot;
         this.yRot = clamp(this.yRot, -yMax, yMax);
     }
 
@@ -67,6 +70,7 @@ class UserCamera extends gltfCamera
     {
         this.xRot = 0;
         this.yRot = 0;
+        this.zRot = 0;
         this.fitViewToScene(gltf, sceneIndex, true);
     }
 
@@ -123,6 +127,7 @@ class UserCamera extends gltfCamera
     {
         vec3.rotateX(vector, vector, VecZero, -this.yRot);
         vec3.rotateY(vector, vector, VecZero, -this.xRot);
+        vec3.rotateZ(vector, vector, VecZero, -this.zRot);
     }
 
     getLookAtTarget()
