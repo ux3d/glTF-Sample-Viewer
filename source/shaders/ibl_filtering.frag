@@ -114,8 +114,9 @@ mat3 generateTBN(vec3 normal)
 	return mat3(tangent, bitangent, normal);
 }
 
-// NDF
-float D_GGX(float NdotH, float roughness)
+// Trowbridge-Reitz microfacet distribution
+// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#specular-brdf
+// https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
 {
     float alpha = roughness * roughness;
 
@@ -126,17 +127,32 @@ float D_GGX(float NdotH, float roughness)
     return alpha2 / (MATH_PI * divisor * divisor);
 }
 
-// NDF
-float D_Ashikhmin(float NdotH, float roughness)
+struct MicrofacetDistributionSample
 {
-	float alpha = roughness * roughness;
-    // Ashikhmin 2007, "Distribution-based BRDFs"
-	float a2 = alpha * alpha;
-	float cos2h = NdotH * NdotH;
-	float sin2h = 1.0 - cos2h;
-	float sin4h = sin2h * sin2h;
-	float cot2 = -cos2h / (a2 * sin2h);
-	return 1.0 / (MATH_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+    float probability;
+    float cosTheta;
+    float sinTheta;
+    float phi;
+};
+
+// GGX microfacet distribution
+// https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+MicrofacetDistributionSample GGX(vec2 xi, float roughness)
+{
+    MicrofacetDistributionSample ggx;
+
+    // evaluate sampling equations
+    float alpha = roughness * roughness;
+    ggx.cosTheta = sqrt(1.0 - alpha * alpha * xi.x / (1.0 - xi.x));
+    ggx.sinTheta = alpha * sqrt(xi.x) / (sqrt(1.0 - xi.x) * ggx.cosTheta);
+    ggx.phi = 2.0 * MATH_PI * xi.y;
+
+    // evaluate GGX pdf
+    float alpha2 = alpha * alpha;
+    float r = ggx.cosTheta * ggx.cosTheta * (alpha2 - 1.0) + 1.0;
+    ggx.probability = alpha2 / (MATH_PI * r * r);
+
+    return ggx;
 }
 
 // NDF
@@ -160,12 +176,12 @@ float PDF(vec3 H, vec3 N, float roughness)
 	else if(u_distribution == cGGX)
 	{
 		float D = D_GGX(NdotH, roughness);
-		return max(D / 4.0, 0.0);
+		return max(D, 0.0);
 	}
 	else if(u_distribution == cCharlie)
 	{
 		float D = D_Charlie(roughness, NdotH);
-		return max(D / 4.0, 0.0);
+		return max(D, 0.0);
 	}
 
 	return 0.f;
@@ -197,11 +213,14 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
 	}
 	else if(u_distribution == cGGX)
 	{
-        // specular mapping
-		float alpha = roughness * roughness;
-		cosTheta = sqrt((1.0 - u) / (1.0 + (alpha*alpha - 1.0) * u));
-		sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-        phi = 2.0 * MATH_PI * v;
+        // Trowbridge-Reitz / GGX microfacet model (Walter et al)
+        // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+
+        MicrofacetDistributionSample ggx = GGX(vec2(u, v), roughness);
+        cosTheta = ggx.cosTheta;
+        sinTheta = ggx.sinTheta;
+        phi = ggx.phi;
+        pdf = ggx.probability;
 	}
 	else if(u_distribution == cCharlie)
 	{
@@ -218,7 +237,7 @@ vec4 getImportanceSample(int sampleIndex, vec3 N, float roughness)
     mat3 TBN = generateTBN(N);
     vec3 direction = TBN * localSpaceDirection;
 
-    if(u_distribution == cGGX || u_distribution == cCharlie)
+    if(u_distribution == cCharlie)
     {
         pdf = PDF(direction, N, roughness);
     }
@@ -276,7 +295,10 @@ vec3 filterColor(vec3 N)
 				lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
 				lod += u_lodBias;
 			}
-            color += vec4(textureLod(uCubeMap, L, lod).rgb * NdotL, NdotL);
+
+            // page 11 https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_slides.pdf
+            // the pdf appears in the GGX LUT
+            color += vec4(textureLod(uCubeMap, L, lod).rgb, 1.0);
 		}
 	}
 
