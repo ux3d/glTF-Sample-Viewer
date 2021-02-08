@@ -117,14 +117,14 @@ mat3 generateTBN(vec3 normal)
 // Trowbridge-Reitz microfacet distribution
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#specular-brdf
 // https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
+float D_GGX(float cosTheta, float roughness)
 {
     float alpha = roughness * roughness;
-
     float alpha2 = alpha * alpha;
 
-    float divisor = NdotH * NdotH * (alpha2 - 1.0) + 1.0;
+    float r = cosTheta * cosTheta * (alpha2 - 1.0) + 1.0;
 
-    return alpha2 / (MATH_PI * divisor * divisor);
+    return alpha2 / (MATH_PI * r * r);
 }
 
 struct MicrofacetDistributionSample
