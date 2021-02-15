@@ -48,7 +48,7 @@ Features
 - [x] [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
 - [x] [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu)
 - [x] [KHR_texture_transform](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform)
-- [ ] KHR_xmp_ld
+- [x] KHR_xmp_ld
 
 
 Setup
@@ -71,7 +71,7 @@ This will create a new `gltf-viewer.js` and `gltf-viewer.module.js` in the `dist
 API
 ----
 
-Gltf sample viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools).
+Gltf sample viewer can be used without the web app, for example for integration into a thirdparty web application or for automated testing (see [Render Fidelity Tools](#render-fidelity-tools)).
 
 The API consists of several components that in combination allow flexible configuration of the gltf viewer.
 
@@ -79,7 +79,7 @@ More detailed information about the API is listed in the [api documentation](API
 
 ### GltfView
 
-The GltfView component is associated with one WebGL2 context. In practice this means it will be associated with one HTML5 Canvas. This component manages the interaction between the canvas and the GL context. For example it therefore specifies the viewport, the swapchain and can be used to schedule frame renders. 
+The GltfView component is associated with one WebGL2 context. In practice this means it will be associated with one HTML5 Canvas. This component manages the interaction between the canvas and the GL context. For example, it therefore specifies the viewport, the swapchain and can be used to schedule frame renders. 
 
 ```js
 const view = new GltfView(webGl2Context);
