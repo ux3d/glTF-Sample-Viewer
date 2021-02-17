@@ -22,7 +22,7 @@ class UserCamera extends gltfCamera
         this.distance = 1;
         this.baseDistance = 1.0;
         this.zoomExponent = 5.0;
-        this.zoomFactor = 0.00008;
+        this.zoomFactor = 0.0002;
         this.orbitSpeed = 1 / 180;
         this.panSpeed = 1;
         this.sceneExtents = {

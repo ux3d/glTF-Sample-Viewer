@@ -16,6 +16,9 @@ async function main()
     const resourceLoader = view.createResourceLoader();
     const state = view.createState();
 
+    // configure the state's constants
+    state.userCamera.zoomFactor = 0.0002;
+
     const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
