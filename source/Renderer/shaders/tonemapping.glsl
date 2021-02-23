@@ -71,7 +71,7 @@ vec3 toneMapACES(vec3 color)
     // Clamp to [0, 1]
     color = clamp(color, 0.0, 1.0);
 
-    return color * 1.8;
+    return color;
 }
 
 vec3 toneMap(vec3 color)
