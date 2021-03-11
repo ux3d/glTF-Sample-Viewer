@@ -359,7 +359,7 @@ class gltfMaterial extends GltfObject
                     this.parseTextureInfoExtensions(this.pbrSpecularTexture, "pbrNextSpecular");
                     this.textures.push(this.pbrSpecularTexture);
                     this.defines.push("HAS_PBRNEXTSPECULAR_MAP 1");
-                    this.properties.set("u_pbrNextSpecularUVTransform", this.pbrSpecularTexture.texCoord);
+                    this.properties.set("u_pbrNextSpecularUVSet", this.pbrSpecularTexture.texCoord);
                 }
 
                 if (this.pbrSpecularColorTexture !== undefined)
@@ -368,7 +368,7 @@ class gltfMaterial extends GltfObject
                     this.parseTextureInfoExtensions(this.pbrSpecularColorTexture, "pbrNextSpecularColor");
                     this.textures.push(this.pbrSpecularColorTexture);
                     this.defines.push("HAS_PBRNEXTSPECULARCOLOR_MAP 1");
-                    this.properties.set("u_pbrNextSpecularColorUVTransform", this.pbrSpecularColorTexture.texCoord);
+                    this.properties.set("u_pbrNextSpecularColorUVSet", this.pbrSpecularColorTexture.texCoord);
                 }
 
                 this.properties.set("u_pbrNextSpecularFactor", specularFactor);
