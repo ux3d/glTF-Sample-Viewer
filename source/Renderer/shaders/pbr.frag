@@ -47,6 +47,10 @@ uniform vec3 u_SheenColorFactor;
 uniform float u_ClearcoatFactor;
 uniform float u_ClearcoatRoughnessFactor;
 
+//PBRSpecular
+uniform vec3 u_pbrNextSpecularColorFactor;
+uniform float u_pbrNextSpecularFactor;
+
 // Transmission
 uniform float u_TransmissionFactor;
 
@@ -90,6 +94,10 @@ struct MaterialInfo
     float clearcoatFactor;
     vec3 clearcoatNormal;
     float clearcoatRoughness;
+
+    vec3 specularColorFactor;
+    float specularFactor;
+    vec4 specularTexture;
 
     float transmissionFactor;
 
@@ -225,6 +233,30 @@ MaterialInfo getMetallicRoughnessInfo(MaterialInfo info, float f0_ior)
     return info;
 }
 
+MaterialInfo getPBRNextSpecularInfo(MaterialInfo info)
+{
+    info.specularColorFactor = u_pbrNextSpecularColorFactor;
+    info.specularFactor = u_pbrNextSpecularFactor;
+    info.specularTexture = vec4(1);
+    
+#ifdef HAS_PBRSPECULAR_COLOR_MAP
+        info.specularTexture.rgb = texture(u_pbrNextSpecularColorSampler, getPbrNextSpecularColorUV()).rgb;
+#endif
+#ifdef HAS_PBRSPECULAR_MAP
+        info.specularTexture.a = texture(u_pbrNextSpecularSampler, getPbrNextSpecularUV()).a;
+#endif
+
+    vec3 dielectricSpecularF0 = info.f0 * info.specularFactor * info.specularTexture.a *
+                              info.specularColorFactor * info.specularTexture.rgb;
+    float dielectricSpecularF90 = info.specularFactor * info.specularTexture.a;
+
+    info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
+    info.f90 = vec3(mix(dielectricSpecularF90, 1, info.metallic));
+    info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
+    
+    return info;
+}
+
 MaterialInfo getSheenInfo(MaterialInfo info)
 {
     info.sheenColorFactor = u_SheenColorFactor;
@@ -340,6 +372,10 @@ void main()
 
 #ifdef MATERIAL_METALLICROUGHNESS
     materialInfo = getMetallicRoughnessInfo(materialInfo, f0_ior);
+#endif
+
+#ifdef MATERIAL_PBRSPECULAR
+    materialInfo = getPBRNextSpecularInfo(materialInfo);
 #endif
 
 #ifdef MATERIAL_SHEEN

@@ -67,6 +67,14 @@ uniform sampler2D u_SheenRoughnessSampler;
 uniform int u_SheenRoughnessUVSet;
 uniform mat3 u_SheenRoughnessUVTransform;
 
+// PBR Next Specular
+uniform sampler2D u_pbrNextSpecularSampler;
+uniform int u_pbrNextSpecularUVSet;
+uniform mat3 u_pbrNextSpecularUVTransform;
+uniform sampler2D u_pbrNextSpecularColorSampler;
+uniform int u_pbrNextSpecularColorUVSet;
+uniform mat3 u_pbrNextSpecularColorUVTransform;
+
 // Transmission Material
 uniform sampler2D u_TransmissionSampler;
 uniform int u_TransmissionUVSet;
@@ -197,6 +205,24 @@ vec2 getSheenRoughnessUV()
     vec3 uv = vec3(u_SheenRoughnessUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
     #ifdef HAS_SHEENROUGHNESS_UV_TRANSFORM
     uv *= u_SheenRoughnessUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getPbrNextSpecularUV()
+{
+    vec3 uv = vec3(u_pbrNextSpecularUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_PBRSPECULAR_UV_TRANSFORM
+    uv *= u_pbrNextSpecularUVTransform;
+    #endif
+    return uv.xy;
+}
+
+vec2 getPbrNextSpecularColorUV()
+{
+    vec3 uv = vec3(u_pbrNextSpecularColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
+    #ifdef HAS_PBRSPECULARCOLOR_UV_TRANSFORM
+    uv *= u_pbrNextSpecularColorUVTransform;
     #endif
     return uv.xy;
 }
