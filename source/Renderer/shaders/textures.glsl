@@ -212,7 +212,7 @@ vec2 getSheenRoughnessUV()
 vec2 getPbrNextSpecularUV()
 {
     vec3 uv = vec3(u_pbrNextSpecularUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
-    #ifdef HAS_PBRSPECULAR_UV_TRANSFORM
+    #ifdef HAS_PBRNEXTSPECULAR_UV_TRANSFORM
     uv *= u_pbrNextSpecularUVTransform;
     #endif
     return uv.xy;
@@ -221,7 +221,7 @@ vec2 getPbrNextSpecularUV()
 vec2 getPbrNextSpecularColorUV()
 {
     vec3 uv = vec3(u_pbrNextSpecularColorUVSet < 1 ? v_UVCoord1 : v_UVCoord2, 1.0);
-    #ifdef HAS_PBRSPECULARCOLOR_UV_TRANSFORM
+    #ifdef HAS_PBRNEXTSPECULARCOLOR_UV_TRANSFORM
     uv *= u_pbrNextSpecularColorUVTransform;
     #endif
     return uv.xy;

@@ -239,10 +239,10 @@ MaterialInfo getPBRNextSpecularInfo(MaterialInfo info)
     info.specularFactor = u_pbrNextSpecularFactor;
     info.specularTexture = vec4(1);
     
-#ifdef HAS_PBRSPECULAR_COLOR_MAP
+#ifdef HAS_PBRNEXTSPECULARCOLOR_MAP
         info.specularTexture.rgb = texture(u_pbrNextSpecularColorSampler, getPbrNextSpecularColorUV()).rgb;
 #endif
-#ifdef HAS_PBRSPECULAR_MAP
+#ifdef HAS_PBRNEXTSPECULAR_MAP
         info.specularTexture.a = texture(u_pbrNextSpecularSampler, getPbrNextSpecularUV()).a;
 #endif
 
@@ -251,7 +251,7 @@ MaterialInfo getPBRNextSpecularInfo(MaterialInfo info)
     float dielectricSpecularF90 = info.specularFactor * info.specularTexture.a;
 
     info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
-    info.f90 = vec3(mix(dielectricSpecularF90, 1, info.metallic));
+    info.f90 = mix( vec3(dielectricSpecularF90), vec3(1), info.metallic);
     info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
     
     return info;

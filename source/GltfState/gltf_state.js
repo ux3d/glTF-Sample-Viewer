@@ -41,6 +41,8 @@ class GltfState
             skinning: true,
             /** KHR_materials_clearcoat */
             clearcoat: true,
+            /** KHR_materials_specular */
+            pbrSpecular: true,
             /** KHR_materials_sheen */
             sheen: true,
             /** KHR_materials_transmission */
