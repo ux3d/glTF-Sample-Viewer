@@ -251,7 +251,7 @@ MaterialInfo getPBRNextSpecularInfo(MaterialInfo info)
     float dielectricSpecularF90 = info.specularFactor * info.specularTexture.a;
 
     info.f0 = mix(dielectricSpecularF0, info.baseColor.rgb, info.metallic);
-    info.f90 = mix( vec3(dielectricSpecularF90), vec3(1), info.metallic);
+    info.f90 = vec3(1);
     info.albedoColor = mix(info.baseColor.rgb * (1.0 - max3(dielectricSpecularF0)),  vec3(0), info.metallic);
     
     return info;
@@ -421,11 +421,11 @@ void main()
 
     // Calculate lighting contribution from image based lighting source (IBL)
 #ifdef USE_IBL
-    f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0);
+    f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.f90);
     f_diffuse += getIBLRadianceLambertian(n, materialInfo.albedoColor);
 
     #ifdef MATERIAL_CLEARCOAT
-        f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0);
+        f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0, materialInfo.clearcoatF90);
     #endif
 
     #ifdef MATERIAL_SHEEN

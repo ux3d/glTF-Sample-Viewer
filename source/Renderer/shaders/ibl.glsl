@@ -13,7 +13,7 @@ vec4 getSheenSample(vec3 reflection, float lod)
     return textureLod(u_CharlieEnvSampler, u_envRotation * reflection, lod);
 }
 
-vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularColor)
+vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 f0, vec3 f90)
 {
     float NdotV = clampedDot(n, v);
     float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
@@ -25,7 +25,7 @@ vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 specularC
 
     vec3 specularLight = specularSample.rgb;
 
-   return specularLight * (specularColor * brdf.x + brdf.y);
+   return specularLight * (f0 * brdf.x + f90 * brdf.y);
 }
 
 vec3 getTransmissionSample(vec2 fragCoord, float perceptualRoughness)
