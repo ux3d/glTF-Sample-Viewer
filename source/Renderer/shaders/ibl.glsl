@@ -16,7 +16,8 @@ vec4 getSheenSample(vec3 reflection, float lod)
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float perceptualRoughness, vec3 f0, vec3 f90)
 {
     float NdotV = clampedDot(n, v);
-    float lod = clamp(perceptualRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    float maxLod = float(u_MipCount - 1);
+    float lod = clamp(1.0 * float(maxLod), 0.0, float(maxLod));
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, perceptualRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
@@ -108,7 +109,8 @@ vec3 getIBLRadianceLambertian(vec3 n, vec3 diffuseColor)
 vec3 getIBLRadianceCharlie(vec3 n, vec3 v, float sheenRoughness, vec3 sheenColor)
 {
     float NdotV = clampedDot(n, v);
-    float lod = clamp(sheenRoughness * float(u_MipCount), 0.0, float(u_MipCount));
+    float maxLod = float(u_MipCount - 1);
+    float lod = clamp(sheenRoughness * float(maxLod), 0.0, float(maxLod));
     vec3 reflection = normalize(reflect(-v, n));
 
     vec2 brdfSamplePoint = clamp(vec2(NdotV, sheenRoughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
