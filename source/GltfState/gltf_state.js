@@ -47,6 +47,8 @@ class GltfState
             sheen: true,
             /** KHR_materials_transmission */
             transmission: true,
+            /** KHR_materials_ior  */
+            ior: true,
             /** clear color expressed as list of ints in the range [0, 255] */
             clearColor: [58, 64, 74, 255],
             /** exposure factor */
@@ -71,7 +73,9 @@ class GltfState
              * -X = 180 
              * -Z = 270
              */
-            environmentRotation: 90.0
+            environmentRotation: 90.0,
+            /** If this is set to true, directional lights will be generated if IBL is disabled */
+            useDirectionalLightsWithDisabledIBL: false
         };
 
         // retain a reference to the view with which the state was created, so that it can be validated
@@ -86,10 +90,12 @@ class GltfState
 GltfState.ToneMaps = {
     /** don't apply tone mapping */
     NONE: "None",
-    /** fast implementation of the ACES sRGB RRT+ODT */
-    ACES_FAST: "ACES fast",
-    /** more accurate implementation of the ACES sRGB RRT+ODT */
-    ACES: "ACES"
+    /** ACES sRGB RRT+ODT implementation for 3D Commerce based on Stephen Hill's implementation with a exposure factor of 1.0 / 0.6 */
+    ACES_3D_COMMERCE: "ACES Filmic Tone Mapping (3D Commerce)",
+    /** fast implementation of the ACES sRGB RRT+ODT based on Krzysztof Narkowicz' implementation*/
+    ACES_NARKOWICZ: "ACES Filmic Tone Mapping (Narkowicz)",
+    /** more accurate implementation of the ACES sRGB RRT+ODT based on Stephen Hill's implementation*/
+    ACES_HILL: "ACES Filmic Tone Mapping (Hill)",
 };
 
 /**
