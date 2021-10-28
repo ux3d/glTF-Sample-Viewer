@@ -28,10 +28,10 @@ class UIModel
         {
             dropdownGltfChanged = app.modelChanged$.pipe(
                 pluck("event", "msg"),
-                startWith("DamagedHelmet"),
+                startWith("IridescentDance"),
                 map(value => {
                     app.flavours = this.pathProvider.getModelFlavours(value);
-                    app.selectedFlavour = "glTF";
+                    app.selectedFlavour = "glTF-Binary";
                     return this.pathProvider.resolve(value, app.selectedFlavour);
                 }),
                 map( value => ({mainFile: value, additionalFiles: undefined})),
