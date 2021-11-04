@@ -206,6 +206,9 @@ async function main()
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
+    uiModel.emissiveStrengthEnabled.subscribe( enabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
+    });
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
