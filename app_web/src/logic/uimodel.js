@@ -31,7 +31,7 @@ class UIModel
                 startWith("IridescentDance"),
                 map(value => {
                     app.flavours = this.pathProvider.getModelFlavours(value);
-                    app.selectedFlavour = "glTF-Binary";
+                    app.selectedFlavour = "glTF";
                     return this.pathProvider.resolve(value, app.selectedFlavour);
                 }),
                 map( value => ({mainFile: value, additionalFiles: undefined})),
