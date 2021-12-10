@@ -21,7 +21,10 @@ vec3 evalSensitivity(vec3 opd, vec3 shift) {
 
     vec3 xyz = val * sqrt(2.0 * PI * var) * cos(pos * phase + shift) * exp(-sq(phase) * var);
     xyz.x += 9.7470e-14 * sqrt(2.0 * PI * 4.5282e+09) * cos(2.2399e+06 * phase[0] + shift[0]) * exp(-4.5282e+09 * sq(phase[0]));
-    return xyz / 1.0685e-7;
+    xyz /= 1.0685e-7;
+
+    vec3 srgb = XYZ_TO_REC709 * xyz;
+    return srgb;
 }
 
 /* Polarized Fresnel Term
@@ -43,16 +46,31 @@ void fresnelConductorExact(float cosThetaI,
     float term2 = 2.0 * a * cosThetaI;
 
     Rs2 = (term1 - term2) / (term1 + term2);
-    if(Rs2 < 0.0f){   
-        Rs2 = 0.0f;
+    if (Rs2 < 0.0) {
+        Rs2 = 0.0;
     }
     float term3 = a2pb2 * cosThetaI2 + sinThetaI4;
     float term4 = term2 * sinThetaI2;
 
     Rp2 = Rs2 * (term3 - term4) / (term3 + term4);
-    if(Rp2 < 0.0f){
-        Rp2 = 0.0f;
+    if (Rp2 < 0.0) {
+        Rp2 = 0.0;
     }
+}
+
+// Add continuous atan implementation at (0.0, 0.0) for special case eta_2 == 1.0
+vec3 continuousAtan(vec3 y, vec3 x) {
+    if (y[0] == 0.0 && x[0] == 0.0) {
+        x[0] = 1.0;
+    }
+    if (y[1] == 0.0 && x[1] == 0.0) {
+        x[1] = 1.0;
+    }
+    if (y[2] == 0.0 && x[2] == 0.0) {
+        x[2] = 1.0;
+    }
+
+    return atan(y, x);
 }
 
 /* Phase shift due to a conducting material.
@@ -67,9 +85,12 @@ void fresnelPhaseExact(vec3 cost, vec3 eta1,
     vec3 U = sqrt(max(A + B, vec3(0)) / 2.0);
     vec3 V = sqrt(max(B - A, vec3(0)) / 2.0);
 
-    phiS = atan(2.0 * eta1 * V * cost, sq(U) + sq(V) - sq(eta1 * cost));
-    phiP = atan(2.0 * eta1 * sq(eta2) * cost * (2.0 * kappa2 * U - (vec3(1.0) - sq(kappa2)) * V),
-           sq(sq(eta2) * (vec3(1.0) + sq(kappa2)) * cost) - sq(eta1) * (sq(U) + sq(V)));
+    vec3 C = 2.0 * eta1 * V * cost;
+    vec3 D = sq(U) + sq(V) - sq(eta1 * cost);
+    phiS = continuousAtan(C, D);
+    vec3 E = 2.0 * eta1 * sq(eta2) * cost * (2.0 * kappa2 * U - (vec3(1.0) - sq(kappa2)) * V);
+    vec3 F = sq(sq(eta2) * (vec3(1.0) + sq(kappa2)) * cost) - sq(eta1) * (sq(U) + sq(V));
+    phiP = continuousAtan(E, F);
 }
 
 // Main function expected by BRDF Explorer
@@ -114,7 +135,7 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     }
 
     // Optical Path Difference
-    vec3 D = 2.0 * eta_2 * Dinc * cosTheta2;
+    vec3 OPD = 2.0 * eta_2 * Dinc * cosTheta2;
 
     // Variables
     vec3 phi21p = vec3(0.0);
@@ -145,7 +166,7 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     Cm = Rs - T121p;
     for (int m = 1; m <= 2; ++m){
         Cm *= r123p;
-        Sm  = 2.0 * evalSensitivity(float(m) * D, float(m) * (phi23p + phi21p));
+        Sm  = 2.0 * evalSensitivity(float(m) * OPD, float(m) * (phi23p + phi21p));
         I  += Cm * Sm;
     }
 
@@ -159,12 +180,12 @@ vec3 evalIridescence(float eta1, float eta2, float cosTheta1, float Dinc, vec3 b
     Cm = Rs - T121s ;
     for (int m = 1; m <= 2; ++m){
         Cm *= r123s;
-        Sm  = 2.0 * evalSensitivity(float(m) * D, float(m) * (phi23s + phi21s));
+        Sm  = 2.0 * evalSensitivity(float(m) * OPD, float(m) * (phi23s + phi21s));
         I  += Cm * Sm;
     }
 
     // Ensure that the BRDF is non negative and convert it to RGB
-    I = max(XYZ_TO_REC709 * I, vec3(0.0, 0.0, 0.0));
+    I = max(I, vec3(0.0, 0.0, 0.0));
 
     return 0.5 * I;
 }
