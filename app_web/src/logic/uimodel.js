@@ -28,7 +28,7 @@ class UIModel
         {
             dropdownGltfChanged = app.modelChanged$.pipe(
                 pluck("event", "msg"),
-                startWith("IridescentDance"),
+                startWith("StanfordDragon"),
                 map(value => {
                     app.flavours = this.pathProvider.getModelFlavours(value);
                     app.selectedFlavour = "glTF";
