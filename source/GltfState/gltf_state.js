@@ -175,6 +175,13 @@ GltfState.DebugOutput = {
         TRANSMISSION_FACTOR: "Transmission Factor",
         VOLUME_THICKNESS: "Volume Thickness",
     },
+
+    /** output specular lighting */
+    iridescence: {
+        IRIDESCENCE: "Iridescence",
+        IRIDESCENCE_FACTOR: "Iridescence Factor",
+        IRIDESCENCE_THICKNESS: "Iridescence Thickness",
+    },
 };
 
 export { GltfState };
