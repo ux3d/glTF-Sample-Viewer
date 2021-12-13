@@ -1,5 +1,12 @@
 [
   {
+    "name": "StanfordDragon",
+    "variants": {
+      "glTF": "Dragon_Thickness_PunctualLights.gltf",
+      "glTF-Binary": "Dragon_Thickness_PunctualLights.glb"
+    }
+  },
+  {
     "name": "IridescentDance",
     "variants": {
       "glTF": "Readyplayerme_Silly_Dancing_Iridescence.gltf",
