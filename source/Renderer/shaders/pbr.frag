@@ -69,7 +69,12 @@ void main()
     materialInfo.ior = 1.5;
     materialInfo.f0 = vec3(0.04);
     materialInfo.specularWeight = 1.0;
-    
+
+    // If the MR debug output is selected, we have to enforce evaluation of the non-iridescence BRDF functions.
+#if DEBUG == DEBUG_METALLIC_ROUGHNESS
+#undef MATERIAL_IRIDESCENCE
+#endif
+
 #ifdef MATERIAL_IOR
     materialInfo = getIorInfo(materialInfo);
 #endif
@@ -145,7 +150,7 @@ void main()
 
         float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
 
-        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0, materialInfo.metallic);
+        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
     }
 #endif
 
@@ -171,7 +176,7 @@ void main()
     f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
-        materialInfo.baseColor, materialInfo.f0, materialInfo.f90,
+        materialInfo.c_diff, materialInfo.f0, materialInfo.f90,
         v_Position, u_ModelMatrix, u_ViewMatrix, u_ProjectionMatrix,
         materialInfo.ior, materialInfo.thickness, materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
@@ -243,7 +248,7 @@ void main()
         l = normalize(pointToLight);
 
         vec3 intensity = getLighIntensity(light, pointToLight);
-        vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.baseColor, materialInfo.ior);
+        vec3 transmittedLight = intensity * getPunctualRadianceTransmission(n, v, l, materialInfo.alphaRoughness, materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.ior);
 
 #ifdef MATERIAL_VOLUME
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
@@ -387,6 +392,24 @@ void main()
 #endif
 #endif
 
+    // Specular:
+#ifdef MATERIAL_SPECULAR
+#if DEBUG == DEBUG_SPECULAR
+    g_finalColor.rgb = linearTosRGB(f_specular);
+#endif
+#if DEBUG == DEBUG_SPECULAR_FACTOR
+    g_finalColor.rgb = vec3(materialInfo.specularWeight);
+#endif
+
+#if DEBUG == DEBUG_SPECULAR_COLOR
+vec3 specularTexture = vec3(1.0);
+#ifdef HAS_SPECULAR_COLOR_MAP
+    specularTexture.rgb = texture(u_SpecularColorSampler, getSpecularColorUV()).rgb;
+#endif
+    g_finalColor.rgb = u_KHR_materials_specular_specularColorFactor * specularTexture.rgb;
+#endif
+#endif
+
     // Transmission, Volume:
 #ifdef MATERIAL_TRANSMISSION
 #if DEBUG == DEBUG_TRANSMISSION_VOLUME
@@ -405,13 +428,13 @@ void main()
     // Iridescence:
 #ifdef MATERIAL_IRIDESCENCE
 #if DEBUG == DEBUG_IRIDESCENCE
-    g_finalColor.rgb = linearTosRGB(f_diffuse + f_specular);
+    g_finalColor.rgb = linearTosRGB(iridescenceFresnel);
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_FACTOR
     g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceFactor));
 #endif
 #if DEBUG == DEBUG_IRIDESCENCE_THICKNESS
-    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness));
+    g_finalColor.rgb = linearTosRGB(vec3(materialInfo.iridescenceThickness / 1200.0));
 #endif
 #endif
 }

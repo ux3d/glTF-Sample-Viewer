@@ -116,12 +116,15 @@ NormalInfo getNormalInfo(vec3 v)
 #else
     // Normals are either present as vertex attributes or approximated.
     ng = normalize(v_Normal);
+    t = normalize(t_ - ng * dot(ng, t_));
+    b = cross(ng, t);
 #endif
 #else
     ng = normalize(cross(dFdx(v_Position), dFdy(v_Position)));
-#endif
     t = normalize(t_ - ng * dot(ng, t_));
     b = cross(ng, t);
+#endif
+
 
     // For a back-facing surface, the tangential basis vectors are negated.
     if (gl_FrontFacing == false)
@@ -321,7 +324,7 @@ MaterialInfo getClearCoatInfo(MaterialInfo info, NormalInfo normalInfo)
 {
     info.clearcoatFactor = u_ClearcoatFactor;
     info.clearcoatRoughness = u_ClearcoatRoughnessFactor;
-    info.clearcoatF0 = vec3(info.f0);
+    info.clearcoatF0 = vec3(pow((info.ior - 1.0) / (info.ior + 1.0), 2.0));
     info.clearcoatF90 = vec3(1.0);
 
 #ifdef HAS_CLEARCOAT_MAP
