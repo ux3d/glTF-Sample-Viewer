@@ -13,6 +13,7 @@ import punctualShader from './shaders/punctual.glsl';
 import primitiveShader from './shaders/primitive.vert';
 import texturesShader from './shaders/textures.glsl';
 import tonemappingShader from './shaders/tonemapping.glsl';
+import displaymappingShader from './shaders/displaymapping.glsl';
 import shaderFunctions from './shaders/functions.glsl';
 import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
@@ -48,6 +49,7 @@ class gltfRenderer
         shaderSources.set("ibl.glsl", iblShader);
         shaderSources.set("punctual.glsl", punctualShader);
         shaderSources.set("tonemapping.glsl", tonemappingShader);
+        shaderSources.set("displaymapping.glsl", displaymappingShader);
         shaderSources.set("textures.glsl", texturesShader);
         shaderSources.set("functions.glsl", shaderFunctions);
         shaderSources.set("animation.glsl", animationShader);
@@ -564,6 +566,11 @@ class gltfRenderer
             this.webGl.context.uniformMatrix4fv(this.shader.getUniformLocation("u_ProjectionMatrix"),false, this.projMatrix);
         }
 
+        if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
+        {
+            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_MaxSceneIntensity"), state.gltf.maxIntensityValue);
+        }
+
         if (drawIndexed)
         {
             const indexAccessor = state.gltf.accessors[primitive.indices];
@@ -655,6 +662,11 @@ class gltfRenderer
         if (state.renderingParameters.useIBL && state.environment)
         {
             fragDefines.push("USE_IBL 1");
+        }
+
+        if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
+        {
+            fragDefines.push("KHR_DISPLAYMAPPING_PQ 1");
         }
 
         switch (state.renderingParameters.toneMap)

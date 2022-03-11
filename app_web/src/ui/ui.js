@@ -94,6 +94,7 @@ const app = new Vue({
             iridescenceEnabled: true,
             specularEnabled: true,
             emissiveStrengthEnabled: true,
+            displaymappingEnabled: true,
 
             activeTab: 0,
             tabsHidden: false,

@@ -221,7 +221,9 @@ async function main()
     uiModel.emissiveStrengthEnabled.subscribe( enabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
     });
-
+    uiModel.displaymappingEnabled.subscribe( displaymappingEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_displaymapping_pq = displaymappingEnabled;
+    });
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
@@ -230,6 +232,7 @@ async function main()
     listenForRedraw(uiModel.specularEnabled);
     listenForRedraw(uiModel.iridescenceEnabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);
+    listenForRedraw(uiModel.displaymappingEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
