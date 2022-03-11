@@ -41,17 +41,6 @@ void main()
     baseColor.a = 1.0;
 #endif
 
-#ifdef MATERIAL_UNLIT
-#if ALPHAMODE == ALPHAMODE_MASK
-    if (baseColor.a < u_AlphaCutoff)
-    {
-        discard;
-    }
-#endif
-    g_finalColor = (vec4(linearTosRGB(baseColor.rgb), baseColor.a));
-    return;
-#endif
-
     vec3 v = normalize(u_Camera - v_Position);
     NormalInfo normalInfo = getNormalInfo(v);
     vec3 n = normalInfo.n;
@@ -136,21 +125,15 @@ void main()
 
 #ifdef MATERIAL_IRIDESCENCE
     vec3 iridescenceFresnel = materialInfo.f0;
+    vec3 iridescenceF0 = materialInfo.f0;
 
     if (materialInfo.iridescenceThickness == 0.0) {
         materialInfo.iridescenceFactor = 0.0;
     }
 
     if (materialInfo.iridescenceFactor > 0.0) {
-#ifdef MATERIAL_CLEARCOAT
-        float topIOR = mix(1.0, 1.5, materialInfo.clearcoatFactor);
-#else
-        float topIOR = 1.0;
-#endif
-
-        float viewAngle = sqrt(1.0 + (sq(NdotV) - 1.0) / sq(topIOR));
-
-        iridescenceFresnel = evalIridescence(topIOR, materialInfo.iridescenceIOR, viewAngle, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIOR, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
     }
 #endif
 
@@ -158,10 +141,11 @@ void main()
 #ifdef USE_IBL
 #ifdef MATERIAL_IRIDESCENCE
     f_specular += getIBLRadianceGGXIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.f0, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.specularWeight);
+    f_diffuse += getIBLRadianceLambertianIridescence(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, iridescenceF0, materialInfo.iridescenceFactor, materialInfo.specularWeight);
 #else
     f_specular += getIBLRadianceGGX(n, v, materialInfo.perceptualRoughness, materialInfo.f0, materialInfo.specularWeight);
-#endif
     f_diffuse += getIBLRadianceLambertian(n, v, materialInfo.perceptualRoughness, materialInfo.c_diff, materialInfo.f0, materialInfo.specularWeight);
+#endif
 
 #ifdef MATERIAL_CLEARCOAT
     f_clearcoat += getIBLRadianceGGX(materialInfo.clearcoatNormal, v, materialInfo.clearcoatRoughness, materialInfo.clearcoatF0, 1.0);
@@ -220,10 +204,11 @@ void main()
             // Calculation of analytical light
             // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#acknowledgments AppendixB
             vec3 intensity = getLighIntensity(light, pointToLight);
-            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
 #ifdef MATERIAL_IRIDESCENCE
+            f_diffuse += intensity * NdotL *  BRDF_lambertianIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.iridescenceFactor, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGXIridescence(materialInfo.f0, materialInfo.f90, iridescenceFresnel, materialInfo.alphaRoughness, materialInfo.iridescenceFactor, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
 #else
+            f_diffuse += intensity * NdotL *  BRDF_lambertian(materialInfo.f0, materialInfo.f90, materialInfo.c_diff, materialInfo.specularWeight, VdotH);
             f_specular += intensity * NdotL * BRDF_specularGGX(materialInfo.f0, materialInfo.f90, materialInfo.alphaRoughness, materialInfo.specularWeight, VdotH, NdotL, NdotV, NdotH);
 #endif
 
@@ -267,8 +252,6 @@ void main()
     f_emissive *= texture(u_EmissiveSampler, getEmissiveUV()).rgb;
 #endif
 
-    vec3 color = vec3(0);
-
     // Layer blending
 
     float clearcoatFactor = 0.0;
@@ -286,9 +269,14 @@ void main()
     vec3 diffuse = f_diffuse;
 #endif
 
+    vec3 color = vec3(0);
+#ifdef MATERIAL_UNLIT
+    color = baseColor.rgb;
+#else
     color = f_emissive + diffuse + f_specular;
     color = f_sheen + color * albedoSheenScaling;
     color = color * (1.0 - clearcoatFactor * clearcoatFresnel) + f_clearcoat;
+#endif
 
 #if DEBUG == DEBUG_NONE
 
