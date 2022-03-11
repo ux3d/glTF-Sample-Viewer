@@ -99,9 +99,9 @@ class UIModel
                                             map( ({ newValue, oldValue }) => newValue));
         this.emissiveStrengthEnabled = app.$watchAsObservable('emissiveStrengthEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
-        this.displaymappingEnabled = app.$watchAsObservable('displaymappingEnabled').pipe(
-            map( ({ newValue, oldValue }) => newValue));
-        this.iblEnabled = app.iblChanged$.pipe(pluck("event", "msg"));
+        this.displaymappingEnabled = app.displaymappingChanged$.pipe(pluck("event", "msg"));
+        this.iblEnabled = app.$watchAsObservable('ibl').pipe(
+                                            map(({ newValue, oldValue }) => newValue));
         this.punctualLightsEnabled = app.punctualLightsChanged$.pipe(pluck("event", "msg"));
         this.renderEnvEnabled = app.$watchAsObservable('renderEnv').pipe(
                                             map( ({ newValue, oldValue }) => newValue));

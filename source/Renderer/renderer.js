@@ -285,8 +285,14 @@ class gltfRenderer
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
-            this.visibleLights.push(this.lightKey);
-            this.visibleLights.push(this.lightFill);
+            this.visibleLights.push(Object.create(this.lightKey));
+            this.visibleLights.push(Object.create(this.lightFill));
+
+            if(state.gltf.displaymapping === true)
+            {
+                this.visibleLights[0].intensity = 7000;
+                this.visibleLights[1].intensity = 100;
+            }
         }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
@@ -299,6 +305,9 @@ class gltfRenderer
                 this.updateSkin(state, node);
             }
         }
+
+        const maxSceneIntensity = this.computeMaxIntensityValue(this.visibleLights)
+        this.apertureFactor = this.aperture(maxSceneIntensity);
 
         // If any transmissive drawables are present, render all opaque and transparent drawables into a separate framebuffer.
         if (this.transmissionDrawables.length > 0) {
@@ -568,7 +577,7 @@ class gltfRenderer
 
         if (state.renderingParameters.enabledExtensions.KHR_displaymapping_pq && state.gltf.displaymapping)
         {
-            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_MaxSceneIntensity"), state.gltf.maxIntensityValue);
+            this.webGl.context.uniform1f(this.shader.getUniformLocation("u_ApertureFactor"), this.apertureFactor);
         }
 
         if (drawIndexed)
@@ -591,6 +600,35 @@ class gltfRenderer
             this.webGl.context.disableVertexAttribArray(location);
         }
     }
+
+    // Computes indices of animations which are disjoint and can be played simultaneously.
+    computeMaxIntensityValue(lights)
+    {
+        let maxIntensity = 0.0;
+
+        for (const light of lights)
+        {
+            let maxComponent = 1.0; //Default value
+            if(light.color !== undefined)
+            {
+                maxComponent = Math.max(Math.max(Math.max(maxComponent, light.color[0]), light.color[1]), light.color[2]);
+            }
+            if(light.intensity !== undefined)
+            {
+                maxComponent *= light.intensity;
+            }
+            maxIntensity = Math.max(maxComponent, maxIntensity);
+        }
+        return maxIntensity;
+    }
+
+    // Used to calculate aperture factor for KHR_displaymapping_pq
+    aperture(lightIn) {
+        const maxComponent = 10000;
+        const value = Math.min(lightIn, maxComponent); 
+        const factor = value / lightIn;
+        return factor;
+    }	
 
     // returns all lights that are relevant for rendering or the default light if there are none
     getVisibleLights(gltf, scene)

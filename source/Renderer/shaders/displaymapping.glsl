@@ -1,8 +1,9 @@
-// lightIn = max(max(light.r, light.g), light.b)
-uniform float u_MaxSceneIntensity;  // Measured in the scene
+// KHR_displaymapping_pq
+
+
+uniform float u_ApertureFactor;  // Calculated by using max light intensity value of the scene
 
 const float maxComponent = 10000.0;
-
 
 vec3 aperture(float lightIn, vec3 colorIn) 
 {
@@ -13,24 +14,14 @@ vec3 aperture(float lightIn, vec3 colorIn)
 
 vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma) 
 {  
-    vec3 nonlinear;
-    if (all(lessThanEqual(color, vec3(0.0003024f)))) 
-    {  
-        nonlinear = 267.84 * color;  
-    }
-    else 
-    {  
-        nonlinear = 1.099 * pow(rangeExponent * color, vec3(0.45)) - 0.099;  
-    }  
+    vec3 nonlinear = 1.099 * pow(rangeExponent * color, vec3(0.45)) - 0.099;  
     return 100.0 * pow(nonlinear, vec3(gamma));
 }  
 
 
 vec3 OOTF(vec3 apertureAjustedColor)
 {
-
-    bool framebufferFormatIsSRGB = false;
-    bool displayIsSDR = true;
+    const bool displayIsSDR = true;
 
     vec3 color;
     float rangeExponent;
@@ -44,15 +35,8 @@ vec3 OOTF(vec3 apertureAjustedColor)
         rangeExponent = 59.5208; // HDR Display
     }
 
-    //If framebuffer uses sRGB transfer function the gamma does not need to be applied here
-    if (framebufferFormatIsSRGB) 
-    {
-        color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 1.0);
-    } 
-    else 
-    {
-        color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
-    }
+    color = BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
+
     return color;
 }
 
@@ -73,8 +57,7 @@ vec3 BT_2100_OETF(vec3 color)
 vec3 displaymapping(vec3 color) 
 {   
     vec3 colorScaled = color / maxComponent; // 10000 cd/m2 is used as maximum output brightness
-    float lightIn = u_MaxSceneIntensity;
-    vec3 apertureAdjustedColor = aperture(lightIn, colorScaled);
+    vec3 apertureAdjustedColor = colorScaled * u_ApertureFactor;
     vec3 ootf = OOTF(apertureAdjustedColor);
     vec3 oetf = BT_2100_OETF(ootf);
     return oetf;
