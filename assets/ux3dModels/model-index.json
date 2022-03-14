@@ -24,5 +24,23 @@
     "variants": {
       "glTF": "IridescenceMetallicSpheres.gltf"
     }
+  },
+  {
+    "name": "DisplayMappingPQ-5000",
+    "variants": {
+      "glTF": "DisplayMappingPQ-5000.gltf"
+    }
+  },
+  {
+    "name": "DisplayMappingPQ-10000",
+    "variants": {
+      "glTF": "DisplayMappingPQ-10000.gltf"
+    }
+  },
+  {
+    "name": "DisplayMappingPQ-no-lights",
+    "variants": {
+      "glTF": "DisplayMappingPQ-no-lights.gltf"
+    }
   }
 ]
