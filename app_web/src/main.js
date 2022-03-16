@@ -234,6 +234,9 @@ async function main()
     uiModel.displaymappingEnabled.subscribe( displaymappingEnabled => {
         state.renderingParameters.enabledExtensions.KHR_displaymapping_pq = displaymappingEnabled;
     });
+    uiModel.forceDisplaymapping.subscribe( forceDisplaymapping => {
+        state.renderingParameters.forceDisplaymapping = forceDisplaymapping;
+    });
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
@@ -243,6 +246,7 @@ async function main()
     listenForRedraw(uiModel.iridescenceEnabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);
     listenForRedraw(uiModel.displaymappingEnabled);
+    listenForRedraw(uiModel.forceDisplaymapping);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
