@@ -1,32 +1,8 @@
 // KHR_displaymapping_pq
 
-uniform float u_ApertureFactor;  // Calculated by using max light intensity value of the scene
-
-const float maxComponent = 10000.0;
-const bool displayIsSDR = true;
-
-// Reference PQ OOTF of ITU BT.2100: https://www.itu.int/rec/R-REC-BT.2100/en
-vec3 BT_2100_OOTF(vec3 color, float rangeExponent, float gamma) 
-{  
-    vec3 nonlinear = 1.099 * pow(rangeExponent * color, vec3(0.45)) - 0.099;  
-    return 100.0 * pow(nonlinear, vec3(gamma));
-}  
-
-
-vec3 OOTF(vec3 apertureAjustedColor)
-{
-    float rangeExponent;
-
-    if(displayIsSDR)
-    {
-        rangeExponent = 46.42; // SDR Display   
-    }
-    else
-    {
-        rangeExponent = 59.5208; // HDR Display
-    }
-
-    return BT_2100_OOTF(apertureAjustedColor, rangeExponent, 2.4);
+vec3 BRDF_SCALE(vec3 color) {
+  float factor = min(1.0, (10000.0 / max(color.r, max(color.g, color.b))));
+  return factor * color;
 }
 
 // Reference PQ OETF of ITU BT.2100: https://www.itu.int/rec/R-REC-BT.2100/en
@@ -42,13 +18,11 @@ vec3 BT_2100_OETF(vec3 color)
     return pow((c1 + c2 * Ypow) / (1.0 + c3 * Ypow), vec3(m2)); 
 }
 
+
 // Called by pbr.fraq
-vec3 displaymapping(vec3 color) 
+vec3 displaymapping(vec3 brdfColor) 
 {   
-    vec3 colorScaled = color / maxComponent; // 10000 cd/m2 is used as maximum output brightness
-    vec3 apertureAdjustedColor = colorScaled * u_ApertureFactor;
-    vec3 tonemapped = toneMapLinear(apertureAdjustedColor);
-    vec3 ootf = OOTF(tonemapped);
-    vec3 oetf = BT_2100_OETF(ootf);
-    return oetf;
+    vec3 displayColor = BRDF_SCALE(brdfColor);
+    vec3 outputColor = BT_2100_OETF(displayColor);
+    return outputColor;
 }
