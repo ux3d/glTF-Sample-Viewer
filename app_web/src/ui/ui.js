@@ -98,6 +98,7 @@ const app = new Vue({
             emissiveStrengthEnabled: true,
             displaymappingEnabled: true,
             forceDisplaymapping: false,
+            emissiveStrengthEnabled: true,
 
             activeTab: 0,
             tabsHidden: false,

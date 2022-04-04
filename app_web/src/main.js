@@ -237,16 +237,19 @@ async function main()
     uiModel.forceDisplaymapping.subscribe( forceDisplaymapping => {
         state.renderingParameters.forceDisplaymapping = forceDisplaymapping;
     });
+    uiModel.emissiveStrengthEnabled.subscribe( enabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
+    });
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
     listenForRedraw(uiModel.volumeEnabled);
     listenForRedraw(uiModel.iorEnabled);
     listenForRedraw(uiModel.specularEnabled);
-    listenForRedraw(uiModel.iridescenceEnabled);
-    listenForRedraw(uiModel.emissiveStrengthEnabled);
     listenForRedraw(uiModel.displaymappingEnabled);
     listenForRedraw(uiModel.forceDisplaymapping);
+    listenForRedraw(uiModel.iridescenceEnabled);
+    listenForRedraw(uiModel.emissiveStrengthEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
         state.renderingParameters.useIBL = iblEnabled;
