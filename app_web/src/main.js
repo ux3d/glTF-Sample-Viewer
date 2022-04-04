@@ -192,10 +192,10 @@ async function main()
     });
     listenForRedraw(uiModel.skinningEnabled);
 
-    uiModel.exposurecompensation.subscribe( exposurecompensation => {
-        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
+    uiModel.exposure.subscribe( exposure => {
+        state.renderingParameters.exposure = (1.0 / Math.pow(2.0, exposure));
     });
-    listenForRedraw(uiModel.exposurecompensation);
+    listenForRedraw(uiModel.exposure);
 
     uiModel.punctualLightsIntensity.subscribe( punctualLightsIntensity => {
         state.renderingParameters.punctualLightsIntensity = Math.pow(10, punctualLightsIntensity);
@@ -255,6 +255,11 @@ async function main()
         state.renderingParameters.useIBL = iblEnabled;
     });
     listenForRedraw(uiModel.iblEnabled);
+
+    uiModel.iblIntensity.subscribe( iblIntensity => {
+        state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity);
+    });
+    listenForRedraw(uiModel.iblIntensity);
 
     uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
         state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;

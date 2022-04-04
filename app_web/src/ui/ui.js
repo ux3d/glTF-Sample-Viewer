@@ -47,7 +47,8 @@ const app = new Vue({
         'addEnvironment$', 'colorChanged$', 'environmentRotationChanged$', 'animationPlayChanged$', 'selectedAnimationsChanged$',
         'variantChanged$', 'exposureChanged$', 'punctualLightsIntensityChanged$', "clearcoatChanged$", "sheenChanged$", "transmissionChanged$",
         "displaymappingChanged$","forceDisplaymappingChanged$",
-        'cameraExport$', 'captureCanvas$'],
+        'cameraExport$', 'captureCanvas$','iblIntensityChanged$',],
+
     data() {
         return {
             fullheight: true,
@@ -73,6 +74,7 @@ const app = new Vue({
             disabledAnimations: [],
 
             ibl: true,
+            iblIntensity: 0.0,
             punctualLights: true,
             punctualLightsIntensity: 0,
             renderEnv: true,
