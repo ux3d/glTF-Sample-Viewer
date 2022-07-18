@@ -274,17 +274,22 @@ class gltfRenderer
         }
 
         currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
+        if(currentCamera.aspectRatio > 1.0) {
+            currentCamera.xmag = currentCamera.ymag * currentCamera.aspectRatio; 
+        } else {
+            currentCamera.ymag = currentCamera.xmag / currentCamera.aspectRatio; 
+        }
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
 
-        this.visibleLights = this.getVisibleLights(state.gltf, scene);
+        this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
             state.renderingParameters.useDirectionalLightsWithDisabledIBL)
         {
-            this.visibleLights.push(this.lightKey);
-            this.visibleLights.push(this.lightFill);
+            this.visibleLights.push([null, this.lightKey]);
+            this.visibleLights.push([null, this.lightFill]);
         }
 
         mat4.multiply(this.viewProjectionMatrix, this.projMatrix, this.viewMatrix);
@@ -585,21 +590,27 @@ class gltfRenderer
         }
     }
 
-    // returns all lights that are relevant for rendering or the default light if there are none
-    getVisibleLights(gltf, scene)
+    /// Compute a list of lights instantiated by one or more nodes as a list of node-light tuples.
+    getVisibleLights(gltf, nodes)
     {
-        let lights = [];
-        for (let light of gltf.lights)
-        {
-            if (light.node !== undefined)
-            {
-                if (scene.includesNode(gltf, light.node))
-                {
-                    lights.push(light);
-                }
+        let nodeLights = [];
+
+        for (const nodeIndex of nodes) {
+            const node = gltf.nodes[nodeIndex];
+
+            if (node.children !== undefined) {
+                nodeLights = nodeLights.concat(this.getVisibleLights(gltf, node.children))
             }
+
+            const lightIndex = node.extensions?.KHR_lights_punctual?.light;
+            if (lightIndex === undefined) {
+                continue;
+            }
+            const light = gltf.lights[lightIndex];
+            nodeLights.push([node, light]);
         }
-        return lights;
+
+        return nodeLights;
     }
 
     updateSkin(state, node)
@@ -649,7 +660,7 @@ class gltfRenderer
         if (state.renderingParameters.usePunctual)
         {
             fragDefines.push("USE_PUNCTUAL 1");
-            fragDefines.push("LIGHT_COUNT " + this.visibleLights.length);
+            fragDefines.push(`LIGHT_COUNT ${this.visibleLights.length}`);
         }
 
         if (state.renderingParameters.useIBL && state.environment)
@@ -732,15 +743,14 @@ class gltfRenderer
 
     applyLights(gltf)
     {
-        let uniformLights = [];
-        for (let light of this.visibleLights)
+        const uniforms = [];
+        for (const [node, light] of this.visibleLights)
         {
-            uniformLights.push(light.toUniform(gltf));
+            uniforms.push(light.toUniform(node));
         }
-
-        if (uniformLights.length > 0)
+        if (uniforms.length > 0)
         {
-            this.shader.updateUniform("u_Lights", uniformLights);
+            this.shader.updateUniform("u_Lights", uniforms);
         }
     }
 
@@ -762,6 +772,8 @@ class gltfRenderer
         let rotMatrix3 = mat3.create();
         mat3.fromMat4(rotMatrix3, rotMatrix4);
         this.shader.updateUniform("u_EnvRotation", rotMatrix3);
+
+        this.shader.updateUniform("u_EnvIntensity", state.renderingParameters.iblIntensity);
 
         return texSlotOffset;
     }

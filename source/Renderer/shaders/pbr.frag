@@ -132,7 +132,7 @@ void main()
     }
 
     if (materialInfo.iridescenceFactor > 0.0) {
-        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIOR, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
+        iridescenceFresnel = evalIridescence(1.0, materialInfo.iridescenceIor, NdotV, materialInfo.iridescenceThickness, materialInfo.f0);
         iridescenceF0 = Schlick_to_F0(iridescenceFresnel, NdotV);
     }
 #endif
@@ -156,8 +156,8 @@ void main()
 #endif
 #endif
 
-#if (defined(MATERIAL_TRANSMISSION) || defined(MATERIAL_VOLUME)) && (defined(USE_PUNCTUAL) || defined(USE_IBL))
-    f_transmission += materialInfo.transmissionFactor * getIBLVolumeRefraction(
+#if defined(MATERIAL_TRANSMISSION) && defined(USE_IBL)
+    f_transmission += getIBLVolumeRefraction(
         n, v,
         materialInfo.perceptualRoughness,
         materialInfo.c_diff, materialInfo.f0, materialInfo.f90,
@@ -239,7 +239,7 @@ void main()
         transmittedLight = applyVolumeAttenuation(transmittedLight, length(transmissionRay), materialInfo.attenuationColor, materialInfo.attenuationDistance);
 #endif
 
-        f_transmission += materialInfo.transmissionFactor * transmittedLight;
+        f_transmission += transmittedLight;
 #endif
     }
 #endif

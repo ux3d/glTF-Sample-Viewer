@@ -17,7 +17,7 @@ async function main()
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
-    const pathProvider = new gltfModelPathProvider('assets/ux3dModels/model-index.json');
+    const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
         "footprint_court": "Footprint Court",
@@ -187,10 +187,10 @@ async function main()
     });
     listenForRedraw(uiModel.skinningEnabled);
 
-    uiModel.exposurecompensation.subscribe( exposurecompensation => {
-        state.renderingParameters.exposure = Math.pow(2, exposurecompensation);
+    uiModel.exposure.subscribe( exposure => {
+        state.renderingParameters.exposure = (1.0 / Math.pow(2.0, exposure));
     });
-    listenForRedraw(uiModel.exposurecompensation);
+    listenForRedraw(uiModel.exposure);
 
     uiModel.morphingEnabled.subscribe( morphingEnabled => {
         state.renderingParameters.morphing = morphingEnabled;
@@ -221,7 +221,6 @@ async function main()
     uiModel.emissiveStrengthEnabled.subscribe( enabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_emissive_strength = enabled;
     });
-
     listenForRedraw(uiModel.clearcoatEnabled);
     listenForRedraw(uiModel.sheenEnabled);
     listenForRedraw(uiModel.transmissionEnabled);
@@ -235,6 +234,11 @@ async function main()
         state.renderingParameters.useIBL = iblEnabled;
     });
     listenForRedraw(uiModel.iblEnabled);
+
+    uiModel.iblIntensity.subscribe( iblIntensity => {
+        state.renderingParameters.iblIntensity = Math.pow(10, iblIntensity);
+    });
+    listenForRedraw(uiModel.iblIntensity);
 
     uiModel.renderEnvEnabled.subscribe( renderEnvEnabled => {
         state.renderingParameters.renderEnvironmentMap = renderEnvEnabled;
