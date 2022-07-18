@@ -24,5 +24,17 @@
     "variants": {
       "glTF": "IridescenceMetallicSpheres.gltf"
     }
+  },
+  {
+    "name": "Waterfall",
+    "variants": {
+      "glTF": "Waterfall.gltf"
+    }
+  },
+  {
+    "name": "AnimateAllTheThings",
+    "variants": {
+      "glTF": "AnimateAllTheThings.gltf"
+    }
   }
 ]
