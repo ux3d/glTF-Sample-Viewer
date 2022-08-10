@@ -1362,14 +1362,11 @@
 			"doubleSided": true,
 			"extensions": {
 				"KHR_materials_diffuse_transmission": {
-					"diffuseTransmissionFactor": 0.8,
-					"diffuseTransmissionColorTexture": {
-						"index": 0
-					},
+					"diffuseTransmissionFactor": 0.80,
 					"diffuseTransmissionColorFactor": [
 						1.0,
-						1.0,
-						1.0
+						0.50,
+						0.50
 					]
 				}
 			},
@@ -1378,6 +1375,9 @@
 				"index": 1
 			},
 			"pbrMetallicRoughness": {
+				"baseColorTexture": {
+					"index": 0
+				},
 				"baseColorFactor": [
 					1.0,
 					1.0,
