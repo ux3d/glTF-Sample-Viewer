@@ -42,5 +42,11 @@
     "variants": {
       "glTF": "leaf.gltf"
     }
+  },
+  {
+    "name": "AudioDuck",
+    "variants": {
+      "glTF": "AudioDuck.gltf"
+    }
   }
 ]
