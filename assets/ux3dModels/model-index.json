@@ -36,5 +36,11 @@
     "variants": {
       "glTF": "AnimateAllTheThings.gltf"
     }
+  },
+  {
+    "name": "Leaf",
+    "variants": {
+      "glTF": "leaf.gltf"
+    }
   }
 ]
