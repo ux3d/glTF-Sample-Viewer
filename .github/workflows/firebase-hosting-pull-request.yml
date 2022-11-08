@@ -13,7 +13,7 @@ jobs:
           submodules: True
       - run: |
           npm install
-          ls -la packages/behavior/dist
+          ls -la packages/behavior
           cd app_web
           npm install
           npm run build
