@@ -1,5 +1,6 @@
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfRenderer } from '../Renderer/renderer.js';
+import { gltfAudioRenderer } from '../Renderer/audio_renderer.js';
 import { GL } from '../Renderer/webgl.js';
 import { ResourceLoader } from '../ResourceLoader/resource_loader.js';
 
@@ -20,6 +21,7 @@ class GltfView
     {
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
+        this.audioRenderer = new gltfAudioRenderer();
         this.behaviorEvents = [];
         this.isFirstRun = true;
     }
@@ -83,6 +85,7 @@ class GltfView
         scene.applyTransformHierarchy(state.gltf);
 
         this.renderer.drawScene(state, scene);
+        this.audioRenderer.handleAudio(state, scene);
     }
 
     /**

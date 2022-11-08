@@ -1,0 +1,11 @@
+Model Information:
+* title:	Leaf test
+* source:	https://sketchfab.com/3d-models/leaf-test-f26fb4b0d2ba4eccaa494eb7f4ba138b
+* author:	crowinhand (https://sketchfab.com/crowinhand)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Leaf test" (https://sketchfab.com/3d-models/leaf-test-f26fb4b0d2ba4eccaa494eb7f4ba138b) by crowinhand (https://sketchfab.com/crowinhand) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

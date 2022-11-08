@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3, quat } from 'gl-matrix';
+import { mat4, mat3, vec3, quat, vec4 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
@@ -67,6 +67,8 @@ class gltfRenderer
         this.viewProjectionMatrix = mat4.create();
 
         this.currentCameraPosition = vec3.create();
+        this.currentCameraLookDirection = vec3.create();
+        this.currentCameraUpDirection = vec3.create();
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
@@ -249,6 +251,7 @@ class gltfRenderer
         this.transmissionDrawables = drawables
             .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
                 && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+
     }
 
     // render complete gltf scene with given camera
@@ -280,6 +283,8 @@ class gltfRenderer
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
+        this.currentCameraLookDirection = currentCamera.getLookDirection(state.gltf);
+        this.currentCameraUpDirection = currentCamera.getUpDirection(state.gltf);
 
         this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
@@ -562,7 +567,7 @@ class gltfRenderer
             this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureCount++);
         }
 
-        if(transmissionSampleTexture !== undefined && (state.renderingParameters.useIBL || state.renderingParameters.usePunctual)
+        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
                     && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
         {
             this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
@@ -730,6 +735,10 @@ class gltfRenderer
             {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE, shaderDefine: "DEBUG_IRIDESCENCE"},
             {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR, shaderDefine: "DEBUG_IRIDESCENCE_FACTOR"},
             {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS, shaderDefine: "DEBUG_IRIDESCENCE_THICKNESS"},
+
+            {debugOutput: GltfState.DebugOutput.diffuseTransmission.DIFFUSE_TRANSMISSION, shaderDefine: "DEBUG_DIFFUSE_TRANSMISSION"},
+            {debugOutput: GltfState.DebugOutput.diffuseTransmission.DIFFUSE_TRANSMISSION_FACTOR, shaderDefine: "DEBUG_DIFFUSE_TRANSMISSION_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.diffuseTransmission.DIFFUSE_TRANSMISSION_COLOR_FACTOR, shaderDefine: "DEBUG_DIFFUSE_TRANSMISSION_COLOR_FACTOR"},
         ];
 
         let mappingCount = 0;
