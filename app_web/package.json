@@ -38,8 +38,7 @@
     "simple-dropzone": "^0.8.0",
     "vue": "^2.6.12",
     "vue-rx": "^6.2.0",
-    "json-ptr": "^3.1.0",
-    "@khronosgroup/gltf-behavior": "../packages/behavior"
+    "json-ptr": "^3.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.9",
