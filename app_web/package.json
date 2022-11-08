@@ -24,7 +24,6 @@
   "author": "Khronos Group Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "@khronosgroup/behavior": "../packages/behavior",
     "@khronosgroup/gltf-viewer": "..",
     "axios": "^0.21.1",
     "buefy": "^0.9.4",
@@ -38,7 +37,9 @@
     "rxjs": "^6.6.3",
     "simple-dropzone": "^0.8.0",
     "vue": "^2.6.12",
-    "vue-rx": "^6.2.0"
+    "vue-rx": "^6.2.0",
+    "json-ptr": "^3.1.0",
+    "@khronosgroup/gltf-behavior": "../packages/behavior"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.9",
