@@ -4,6 +4,7 @@ import { gltfAudioRenderer } from '../Renderer/audio_renderer.js';
 import { GL } from '../Renderer/webgl.js';
 import { ResourceLoader } from '../ResourceLoader/resource_loader.js';
 
+
 /**
  * GltfView represents a view on a gltf, e.g. in a canvas
  */
@@ -21,6 +22,8 @@ class GltfView
         this.context = context;
         this.renderer = new gltfRenderer(this.context);
         this.audioRenderer = new gltfAudioRenderer();
+        this.behaviorEvents = [];
+        this.isFirstRun = true;
     }
 
     /**
@@ -61,6 +64,7 @@ class GltfView
     {
         this.renderer.init(state);
         this._animate(state);
+        this._behave(state);
 
         this.renderer.resize(width, height);
 
@@ -155,6 +159,10 @@ class GltfView
         };
     }
 
+    triggerEvent(name, data) {
+        this.behaviorEvents.push({ name, data });
+    }
+
     _animate(state)
     {
         if(state.gltf === undefined)
@@ -164,26 +172,53 @@ class GltfView
 
         if(state.gltf.animations !== undefined && state.animationIndices !== undefined)
         {
-            const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
-                return false === state.animationIndices.includes(index);
-            });
+            // TODO this code does not yet work as intended with the KHR_behavior extension
+            // const disabledAnimations = state.gltf.animations.filter( (anim, index) => {
+            //     return false === state.animationIndices.includes(index);
+            // });
 
-            for(const disabledAnimation of disabledAnimations)
-            {
-                disabledAnimation.advance(state.gltf, undefined);
-            }
+            // for(const disabledAnimation of disabledAnimations)
+            // {
+            //     disabledAnimation.advance(state.gltf, undefined);
+            // }
 
-            const t = state.animationTimer.elapsedSec();
-
+            
             const animations = state.animationIndices.map(index => {
                 return state.gltf.animations[index];
             }).filter(animation => animation !== undefined);
 
-            for(const animation of animations)
-            {
-                animation.advance(state.gltf, t);
+            animations.forEach((animation, index) => {
+                if (!state.animations[index].timer.isStopped()) {
+                    const t = state.animations[index].timer.time();
+                    animation.advance(state.gltf, t);
+                }
+            });
+        }
+    }
+
+    _behave(state)
+    {
+        if(state.gltf === undefined)
+        {
+            return;
+        }
+        
+        // this behavior is only called once, it is reset after a new glTF has been loaded
+        if(this.isFirstRun) {
+            this.triggerEvent("start");
+            this.isFirstRun = false;
+        }
+
+        if(state.gltf.behaviors !== undefined)
+        {
+            this.triggerEvent("update");
+
+            for (const behavior of state.gltf.behaviors) {
+                behavior.processEvents(this.behaviorEvents);
             }
         }
+
+        this.behaviorEvents = [];
     }
 }
 

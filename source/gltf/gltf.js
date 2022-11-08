@@ -1,6 +1,7 @@
 import { gltfAccessor } from './accessor.js';
 import { gltfBuffer } from './buffer.js';
 import { gltfBufferView } from './buffer_view.js';
+import { gltfBehavior } from './behavior.js';
 import { gltfCamera } from './camera.js';
 import { gltfImage } from './image.js';
 import { gltfLight } from './light.js';
@@ -79,6 +80,8 @@ class glTF extends GltfObject
         this.audioSources = objectsFromJsons(getJsonAudioSourcesFromExtensions(json.extensions), gltfAudioSource);
         this.audioEmitters = objectsFromJsons(getJsonAudioEmittersFromExtensions(json.extensions), gltfAudioEmitter);
         this.audio = objectsFromJsons(getJsonAudioFromExtensions(json.extensions), gltfAudio);
+        this.behaviors = objectsFromJsons(getJsonBehaviorsFromExtensions(json.extensions), gltfBehavior);
+
 
         this.materials.push(gltfMaterial.createDefault());
         this.samplers.push(gltfSampler.createDefault());
@@ -187,6 +190,19 @@ class glTF extends GltfObject
 
         return nonDisjointAnimations;
     }
+}
+
+function getJsonBehaviorsFromExtensions(extensions)
+{
+    if (extensions === undefined)
+    {
+        return [];
+    }
+    if (extensions.KHR_behavior === undefined)
+    {
+        return [];
+    }
+    return extensions.KHR_behavior.behaviors;
 }
 
 function getJsonLightsFromExtensions(extensions)

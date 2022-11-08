@@ -143,7 +143,8 @@ const app = new Vue({
     {
         setAnimationState: function(value)
         {
-            this.$refs.animationState.setState(value);
+            // TODO this code does not yet work as intended with the KHR_behavior extension
+            //this.$refs.animationState.setState(value);
         },
         iblTriggered: function(value)
         {

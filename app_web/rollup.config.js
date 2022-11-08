@@ -1,8 +1,8 @@
 import glslify from 'rollup-plugin-glslify';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import builtins from 'rollup-plugin-node-builtins';
 import scss from 'rollup-plugin-scss';
-import commonjs from 'rollup-plugin-commonjs';
+import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
@@ -13,24 +13,21 @@ export default {
   output: [
     {
       name: 'SampleViewerApp',
-      file: 'dist/GltfSVApp.umd.js',
-      format: 'umd',
-      sourcemap: true,
-      external: [ 'gl-matrix', 'axios', 'jpeg-js', 'fast-png', 'json-ptr']
-    }
+      file: 'dist/GltfSVApp.js',
+      format: 'esm',
+      sourcemap: true
+  }
   ],
   plugins: [
     json(),
-    commonjs({
-
-    }),
     glslify({
         include: ['../source/Renderer/shaders/*', '../source/shaders/*'],
         compress: false
     }),
     resolve({
         browser: true,
-        preferBuiltins: true
+        preferBuiltins: true,
+        dedupe: [ 'gl-matrix', 'axios', 'jpeg-js', 'fast-png', 'json-ptr']
     }),
     builtins(),
     scss(),
@@ -47,10 +44,12 @@ export default {
         verbose: true
     }),
     replace({
-      'process.env.NODE_ENV': JSON.stringify( 'production' )
+      'process.env.NODE_ENV': JSON.stringify( 'production' ),
+      preventAssignment: true,
     }),
     alias({
       'vue': 'vue/dist/vue.esm.js'
     }),
+    commonjs(),
   ]
 };

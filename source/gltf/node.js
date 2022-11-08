@@ -1,7 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { jsToGl } from './utils.js';
 import { GltfObject } from './gltf_object.js';
-import { AnimatableProperty, makeAnimatable } from './animatable_property.js';
+import { PointerTargetProperty, makePointerTarget } from './pointer_target_property.js';
 
 // contain:
 // transform
@@ -14,13 +14,13 @@ class gltfNode extends GltfObject
         super();
         this.camera = undefined;
         this.children = [];
-        this.rotation = new AnimatableProperty(jsToGl([0, 0, 0, 1]));
-        this.scale = new AnimatableProperty(jsToGl([1, 1, 1]));
-        this.translation = new AnimatableProperty(jsToGl([0, 0, 0]));
+        this.rotation = new PointerTargetProperty(jsToGl([0, 0, 0, 1]));
+        this.scale = new PointerTargetProperty(jsToGl([1, 1, 1]));
+        this.translation = new PointerTargetProperty(jsToGl([0, 0, 0]));
         this.name = undefined;
         this.mesh = undefined;
         this.skin = undefined;
-        this.weights = new AnimatableProperty(undefined);
+        this.weights = new PointerTargetProperty(undefined);
 
         // non gltf
         this.worldTransform = mat4.create();
@@ -32,7 +32,7 @@ class gltfNode extends GltfObject
     fromJson(json)
     {
         super.fromJson(json);
-        makeAnimatable(this, json, { "weights": [] });
+        makePointerTarget(this, json, { "weights": [] });
     }
 
     getWeights(gltf)
@@ -68,9 +68,9 @@ class gltfNode extends GltfObject
 
     resetTransform()
     {
-        this.rotation.rest();
-        this.scale.rest();
-        this.translation.rest();
+        this.rotation.reset();
+        this.scale.reset();
+        this.translation.reset();
     }
 
     getLocalTransform()

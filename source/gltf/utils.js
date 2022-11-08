@@ -1,5 +1,5 @@
 import { glMatrix } from 'gl-matrix';
-import { AnimatableProperty } from './animatable_property.js';
+import { PointerTargetProperty } from './pointer_target_property.js';
 
 function jsToGl(array) {
     let tensor = new glMatrix.ARRAY_TYPE(array.length);
@@ -41,6 +41,18 @@ function initGlForMembers(gltfObj, gltf, webGlContext) {
     }
 }
 
+function initStateForMembers(gltfObj, state) {
+    for (const name of Object.keys(gltfObj)) {
+        const member = gltfObj[name];
+        member?.initState?.(state);
+        if (Array.isArray(member)) {
+            for (const element of member) {
+                element?.initState?.(state);
+            }
+        }
+    }
+}
+
 function objectsFromJsons(jsonObjects, GltfType) {
     if (jsonObjects === undefined) {
         return [];
@@ -66,8 +78,8 @@ function fromKeys(target, jsonObj, ignore = []) {
         }
         if (jsonObj[k] !== undefined) {
             let normalizedK = k.replace("^@", "");
-            if (target[normalizedK] instanceof AnimatableProperty) {
-                target[normalizedK].restAt(jsonObj[k]);
+            if (target[normalizedK] instanceof PointerTargetProperty) {
+                target[normalizedK].setFallbackValue(jsonObj[k]);
             }
             else {
                 target[normalizedK] = jsonObj[k];
@@ -97,6 +109,11 @@ function stringHash(str, seed = 0) {
 
 function clamp(number, min, max) {
     return Math.min(Math.max(number, min), max);
+}
+
+/** use custom mod function that returns positive results for negative inputs */
+function mod(left, right) {
+    return ((left % right) + right) % right;
 }
 
 function getIsGlb(filename) {
@@ -162,60 +179,128 @@ class Timer {
 }
 
 class AnimationTimer {
-    constructor() {
-        this.startTime = 0;
-        this.paused = true;
-        this.fixedTime = null;
-        this.pausedTime = 0;
+    constructor(totalTime) {
+        this._isPaused = true;
+        this._isStopped = false;
+        this._totalTime = totalTime;
+        this.repetitions = -1;
+        this.speedChanges = [];
+        /** onFinishRepetitions may hold a function that is executed when the animation stops after completing all allowed repetitions*/
+        this.onFinishRepetitions; 
     }
 
-    elapsedSec() {
-        if (this.paused) {
-            return this.pausedTime / 1000;
-        }
-        else {
-            return this.fixedTime || (new Date().getTime() - this.startTime) / 1000;
-        }
+    isPaused() {
+        return this._isPaused;
     }
 
-    toggle() {
-        if (this.paused) {
-            this.unpause();
+    isStopped() {
+        return this._isStopped;
+    }
+
+    /** Calculate the complete time an animation has been playing in ms. Speed is taken into account. Result can be negative */
+    calculateAnimationTime() {
+        let animationTimeMs = 0.0;
+        for(let i = 0; i < this.speedChanges.length; ++i) {
+            const change = this.speedChanges[i];
+            let durationMs = 0.0;
+            if (i == this.speedChanges.length - 1) {
+                durationMs = new Date().getTime() - change.timestampMs;
+            } else {
+                const nextChange = this.speedChanges[i + 1];
+                durationMs = nextChange.timestampMs - change.timestampMs;
+            }
+            animationTimeMs += change.speed * durationMs
         }
-        else {
-            this.pause();
+
+        return animationTimeMs;
+    }
+
+    /** Returns time in seconds */
+    time() {
+        if (this._isStopped) {
+            return this._totalTime - 0.02; // this constant is a quick fix to get the end state of an animation
         }
+
+        const totalAnimationTimeSec = this.calculateAnimationTime() / 1000;
+        const animationTimeSec = mod(totalAnimationTimeSec, this._totalTime);
+
+        if (this.repetitions >= 0) {
+            /** warning: using repetitions in conjunction with setTime leads to undefined behavior */
+            if (totalAnimationTimeSec / this._totalTime > this.repetitions) {
+                this.stop();
+                if (this.onFinishRepetitions !== undefined) {
+                    this.onFinishRepetitions();
+                    this.onFinishRepetitions = undefined;
+                }
+                return this._totalTime - 0.02; // this constant is a quick fix to get the end state of an animation
+            }
+        }
+
+        return animationTimeSec;
+    }
+    
+    /** Set time in seconds */
+    setTime(timeSec) {
+        if (this._isStopped) {
+            return;
+        }
+        const lastChange = this.speedChanges[this.speedChanges.length - 1];
+        const currentSpeed = lastChange.speed;
+
+        const timeNowMs = new Date().getTime();
+        const newTimestamp = timeNowMs - (timeSec * 1000);
+
+        this.speedChanges = [];
+        this.speedChanges.push({ speed: 1.0, timestampMs: newTimestamp });
+        this.speedChanges.push({ speed: currentSpeed, timestampMs: timeNowMs });
+    }
+
+    setSpeed(speed) {
+        if (this._isStopped) {
+            return;
+        }
+        const newSpeedChange = { speed: speed, timestampMs: new Date().getTime() };
+        this.speedChanges.push(newSpeedChange);
+        this._isPaused = false;
+    }
+
+    setRepetitions(repetitions) {
+        this.repetitions = repetitions;
     }
 
     start() {
-        this.startTime = new Date().getTime();
-        this.paused = false;
+        this.speedChanges = [{ speed: 1.0, timestampMs: new Date().getTime() }];
+        this._isPaused = false;
+        this._isStopped = false;
     }
 
     pause() {
-        this.pausedTime = new Date().getTime() - this.startTime;
-        this.paused = true;
-    }
-
-    unpause() {
-        this.startTime += new Date().getTime() - this.startTime - this.pausedTime;
-        this.paused = false;
-    }
-
-    reset() {
-        if (!this.paused) {
-            // Animation is running.
-            this.startTime = new Date().getTime();
+        if (this._isPaused || this._isStopped) {
+            return;
         }
-        else {
-            this.startTime = 0;
-        }
-        this.pausedTime = 0;
+        this.speedChanges.push({ speed: 0.0, timestampMs: new Date().getTime() });
+        this._isPaused = true;
     }
 
-    setFixedTime(timeInSec) {
-        this.paused = false;
-        this.fixedTime = timeInSec;
+    continue() {
+        if (!this._isPaused || this._isStopped) {
+            return;
+        }
+        if (this.speedChanges.length < 2) {
+            this.start();
+            return;
+        }
+        const lastChangeBeforePause = this.speedChanges[this.speedChanges.length - 2];
+        const newSpeed = lastChangeBeforePause.speed;
+
+        const newSpeedChange = { speed: newSpeed, timestampMs: new Date().getTime() };
+        this.speedChanges.push(newSpeedChange);
+        this._isPaused = false;
+    }
+
+    stop() {
+        this.speedChanges = [{ speed: 0.0, timestampMs: new Date().getTime() }];
+        this._isStopped = true;
     }
 }
 
@@ -239,5 +324,6 @@ export {
     UniformStruct,
     Timer,
     AnimationTimer,
-    initGlForMembers
+    initGlForMembers,
+    initStateForMembers
 };
