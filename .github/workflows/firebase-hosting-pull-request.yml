@@ -13,7 +13,7 @@ jobs:
           submodules: True
       - run: |
           npm install
-          ls -la node_modules/@khronosgroup/gltf-behavior
+          ls -la packages/behavior/dist
           cd app_web
           npm install
           npm run build
