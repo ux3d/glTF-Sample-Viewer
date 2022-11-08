@@ -23,7 +23,7 @@ export default {
         resolve({
             browser: true,
             preferBuiltins: false,
-            dedupe: ['gl-matrix', 'axios', 'jpeg-js', 'fast-png']
+            dedupe: ['gl-matrix', 'axios', 'jpeg-js', 'fast-png', 'json-ptr']
         }),
         copy({
             targets: [
@@ -37,6 +37,8 @@ export default {
                 { src: ["source/libs/*", "!source/libs/hdrpng.js"], dest: "dist/libs" }
             ]
         }),
-        commonjs(),
+              commonjs({
+                       include: 'node_modules/**'
+                       }),
     ]
 };

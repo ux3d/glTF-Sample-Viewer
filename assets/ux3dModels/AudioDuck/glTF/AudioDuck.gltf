@@ -1,0 +1,269 @@
+{
+	"accessors": [
+		{
+			"bufferView": 1,
+			"byteOffset": 0,
+			"componentType": 5123,
+			"count": 12636,
+			"max": [
+				2398.0
+			],
+			"min": [
+				0.0
+			],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 2,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 2399,
+			"max": [
+				0.9995989799499512,
+				0.999580979347229,
+				0.9984359741210938
+			],
+			"min": [
+				-0.9990839958190918,
+				-1.0,
+				-0.9998319745063782
+			],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 3,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 2399,
+			"max": [
+				96.17990112304688,
+				163.97000122070313,
+				53.92519760131836
+			],
+			"min": [
+				-69.29850006103516,
+				9.929369926452637,
+				-61.32819747924805
+			],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 4,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 2399,
+			"max": [
+				0.9833459854125977,
+				0.9800369739532471
+			],
+			"min": [
+				0.026409000158309937,
+				0.01996302604675293
+			],
+			"type": "VEC2"
+		}
+	],
+	"asset": {
+		"extras": {
+			"created": "Wed Aug 10 17:47:34 2022"
+		},
+		"generator": "Gestaltor 2022.1.0  Development (internal) (dev-310b957)",
+		"version": "2.0"
+	},
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 16302,
+			"byteOffset": 0
+		},
+		{
+			"buffer": 0,
+			"byteLength": 25272,
+			"byteOffset": 16302,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28788,
+			"byteOffset": 41576,
+			"byteStride": 12,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 28788,
+			"byteOffset": 70364,
+			"byteStride": 12,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 19192,
+			"byteOffset": 99152,
+			"byteStride": 8,
+			"target": 34962
+		}
+	],
+	"buffers": [
+		{
+			"byteLength": 118344,
+			"uri": "AudioDuck.bin"
+		}
+	],
+	"cameras": [
+		{
+			"perspective": {
+				"aspectRatio": 1.5,
+				"yfov": 0.6605925559997559,
+				"zfar": 10000.0,
+				"znear": 1.0
+			},
+			"type": "perspective"
+		}
+	],
+	"extensions": {
+		"KHR_audio": {
+			"emitters": [
+				{
+					"sources": [0],
+					"type": "global"
+				}
+			],
+			"sources": [
+				{
+					"gain": 1.0,
+					"autoPlay": true,
+					"loop": true,
+					"audio": 0
+				}
+			],
+			"audio": [
+				{
+					"name": "quack",
+					"uri": "quack.mp3"
+				}
+			]
+		}
+	},
+	"extensionsUsed": [
+		"KHR_audio"
+	],
+	"images": [
+		{
+			"bufferView": 0,
+			"mimeType": "image/png"
+		}
+	],
+	"materials": [
+		{
+			"emissiveFactor": [
+				0.0,
+				0.0,
+				0.0
+			],
+			"name": "blinn3-fx",
+			"pbrMetallicRoughness": {
+				"baseColorTexture": {
+					"index": 0
+				},
+				"metallicFactor": 0.0
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "LOD3spShape",
+			"primitives": [
+				{
+					"attributes": {
+						"NORMAL": 1,
+						"POSITION": 2,
+						"TEXCOORD_0": 3
+					},
+					"indices": 0,
+					"material": 0,
+					"mode": 4
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"children": [
+				2,
+				1
+			],
+			"matrix": [
+				0.009999999776482582,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				0.009999999776482582,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				0.009999999776482582,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"camera": 0,
+			"matrix": [
+				-0.7289686799049375,
+				-5.551115186392477e-17,
+				-0.6845470666885376,
+				0.0,
+				-0.4252049046621186,
+				0.7836934328079225,
+				0.45279729199640095,
+				0.0,
+				0.5364750527466899,
+				0.6211478284894167,
+				-0.5712879800865776,
+				0.0,
+				400.1130065917969,
+				463.2640075683594,
+				-431.0780334472656,
+				1.0
+			]
+		},
+		{
+			"mesh": 0
+		}
+	],
+	"samplers": [
+		{
+			"magFilter": 9729,
+			"minFilter": 9986,
+			"wrapS": 10497,
+			"wrapT": 10497
+		}
+	],
+	"scene": 0,
+	"scenes": [
+		{
+			"extensions": {
+				"KHR_audio": {
+					"emitters": [
+						0
+					]
+				}
+			},
+			"nodes": [
+				0
+			]
+		}
+	],
+	"textures": [
+		{
+			"sampler": 0,
+			"source": 0
+		}
+	]
+}

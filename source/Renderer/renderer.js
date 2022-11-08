@@ -1,4 +1,4 @@
-import { mat4, mat3, vec3, quat } from 'gl-matrix';
+import { mat4, mat3, vec3, quat, vec4 } from 'gl-matrix';
 import { ShaderCache } from './shader_cache.js';
 import { GltfState } from '../GltfState/gltf_state.js';
 import { gltfWebGl, GL } from './webgl.js';
@@ -18,6 +18,8 @@ import animationShader from './shaders/animation.glsl';
 import cubemapVertShader from './shaders/cubemap.vert';
 import cubemapFragShader from './shaders/cubemap.frag';
 import { gltfLight } from '../gltf/light.js';
+import { PointerTargetProperty } from '../gltf/pointer_target_property.js';
+import { jsToGl } from '../gltf/utils.js';
 
 class gltfRenderer
 {
@@ -65,10 +67,12 @@ class gltfRenderer
         this.viewProjectionMatrix = mat4.create();
 
         this.currentCameraPosition = vec3.create();
+        this.currentCameraLookDirection = vec3.create();
+        this.currentCameraUpDirection = vec3.create();
 
         this.lightKey = new gltfLight();
         this.lightFill = new gltfLight();
-        this.lightFill.intensity = 0.5;
+        this.lightFill.intensity.fallbackValue = 0.5;
         const quatKey = quat.fromValues(
             -0.3535534,
             -0.353553385,
@@ -247,6 +251,7 @@ class gltfRenderer
         this.transmissionDrawables = drawables
             .filter(({node, primitive}) => state.gltf.materials[primitive.material].extensions !== undefined
                 && state.gltf.materials[primitive.material].extensions.KHR_materials_transmission !== undefined);
+
     }
 
     // render complete gltf scene with given camera
@@ -268,16 +273,18 @@ class gltfRenderer
             currentCamera = state.gltf.cameras[state.cameraIndex].clone();
         }
 
-        currentCamera.aspectRatio = this.currentWidth / this.currentHeight;
-        if(currentCamera.aspectRatio > 1.0) {
-            currentCamera.xmag = currentCamera.ymag * currentCamera.aspectRatio; 
+        currentCamera.perspective.aspectRatio.fallbackValue = this.currentWidth / this.currentHeight;
+        if(currentCamera.perspective.aspectRatio.fallbackValue > 1.0) {
+            currentCamera.orthographic.xmag.fallbackValue = currentCamera.orthographic.ymag.fallbackValue * currentCamera.perspective.aspectRatio.fallbackValue; 
         } else {
-            currentCamera.ymag = currentCamera.xmag / currentCamera.aspectRatio; 
+            currentCamera.orthographic.ymag.fallbackValue = currentCamera.orthographic.xmag.fallbackValue / currentCamera.perspective.aspectRatio.fallbackValue; 
         }
 
         this.projMatrix = currentCamera.getProjectionMatrix();
         this.viewMatrix = currentCamera.getViewMatrix(state.gltf);
         this.currentCameraPosition = currentCamera.getPosition(state.gltf);
+        this.currentCameraLookDirection = currentCamera.getLookDirection(state.gltf);
+        this.currentCameraUpDirection = currentCamera.getUpDirection(state.gltf);
 
         this.visibleLights = this.getVisibleLights(state.gltf, scene.nodes);
         if (this.visibleLights.length === 0 && !state.renderingParameters.useIBL &&
@@ -396,17 +403,19 @@ class gltfRenderer
 
         let vertDefines = [];
         this.pushVertParameterDefines(vertDefines, state.renderingParameters, state.gltf, node, primitive);
-        vertDefines = primitive.getDefines().concat(vertDefines);
+        vertDefines = primitive.defines.concat(vertDefines);
+
+        material.updateTextureTransforms();
 
         let fragDefines = material.getDefines(state.renderingParameters).concat(vertDefines);
-        if(renderpassConfiguration.linearOutput === true)
+        if (renderpassConfiguration.linearOutput)
         {
            fragDefines.push("LINEAR_OUTPUT 1");
         }
         this.pushFragParameterDefines(fragDefines, state);
         
-        const fragmentHash = this.shaderCache.selectShader(material.getShaderIdentifier(), fragDefines);
-        const vertexHash = this.shaderCache.selectShader(primitive.getShaderIdentifier(), vertDefines);
+        const fragmentHash = this.shaderCache.selectShader("pbr.frag", fragDefines);
+        const vertexHash = this.shaderCache.selectShader("primitive.vert", vertDefines);
 
         if (fragmentHash && vertexHash)
         {
@@ -422,7 +431,7 @@ class gltfRenderer
 
         if (state.renderingParameters.usePunctual)
         {
-            this.applyLights(state.gltf);
+            this.applyLights();
         }
 
         // update model dependant matrices once per node
@@ -491,6 +500,15 @@ class gltfRenderer
 
         for (let [uniform, val] of material.getProperties().entries())
         {
+            if (val instanceof PointerTargetProperty) {
+                val = val.value();
+            }
+            if (val instanceof Array) {
+                val = jsToGl(val);
+            }
+            if (val === undefined) {
+                continue;
+            }
             this.shader.updateUniform(uniform, val, false);
         }
 
@@ -549,7 +567,7 @@ class gltfRenderer
             this.webGl.setTexture(this.shader.getUniformLocation("u_SheenELUT"), state.environment, state.environment.sheenELUT, textureCount++);
         }
 
-        if(transmissionSampleTexture !== undefined && (state.renderingParameters.useIBL || state.renderingParameters.usePunctual)
+        if(transmissionSampleTexture !== undefined && state.renderingParameters.useIBL
                     && state.environment && state.renderingParameters.enabledExtensions.KHR_materials_transmission)
         {
             this.webGl.context.activeTexture(GL.TEXTURE0 + textureCount);
@@ -628,11 +646,11 @@ class gltfRenderer
         // morphing
         if (parameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
-            const mesh = gltf.meshes[node.mesh];
-            if (mesh.getWeightsAnimated() !== undefined && mesh.getWeightsAnimated().length > 0)
+            const weights = node.getWeights(gltf).value();
+            if (weights !== undefined && weights.length > 0)
             {
                 vertDefines.push("USE_MORPHING 1");
-                vertDefines.push("WEIGHT_COUNT " + mesh.getWeightsAnimated().length);
+                vertDefines.push("WEIGHT_COUNT " + weights.length);
             }
         }
     }
@@ -641,11 +659,10 @@ class gltfRenderer
     {
         if (state.renderingParameters.morphing && node.mesh !== undefined && primitive.targets.length > 0)
         {
-            const mesh = state.gltf.meshes[node.mesh];
-            const weightsAnimated = mesh.getWeightsAnimated();
-            if (weightsAnimated !== undefined && weightsAnimated.length > 0)
+            const weights = node.getWeights(state.gltf).value();
+            if (weights !== undefined && weights.length > 0)
             {
-                this.shader.updateUniformArray("u_morphWeights", weightsAnimated);
+                this.shader.updateUniformArray("u_morphWeights", weights);
             }
         }
     }
@@ -718,6 +735,10 @@ class gltfRenderer
             {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE, shaderDefine: "DEBUG_IRIDESCENCE"},
             {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE_FACTOR, shaderDefine: "DEBUG_IRIDESCENCE_FACTOR"},
             {debugOutput: GltfState.DebugOutput.iridescence.IRIDESCENCE_THICKNESS, shaderDefine: "DEBUG_IRIDESCENCE_THICKNESS"},
+
+            {debugOutput: GltfState.DebugOutput.diffuseTransmission.DIFFUSE_TRANSMISSION, shaderDefine: "DEBUG_DIFFUSE_TRANSMISSION"},
+            {debugOutput: GltfState.DebugOutput.diffuseTransmission.DIFFUSE_TRANSMISSION_FACTOR, shaderDefine: "DEBUG_DIFFUSE_TRANSMISSION_FACTOR"},
+            {debugOutput: GltfState.DebugOutput.diffuseTransmission.DIFFUSE_TRANSMISSION_COLOR_FACTOR, shaderDefine: "DEBUG_DIFFUSE_TRANSMISSION_COLOR_FACTOR"},
         ];
 
         let mappingCount = 0;
@@ -736,7 +757,7 @@ class gltfRenderer
 
     }
 
-    applyLights(gltf)
+    applyLights()
     {
         const uniforms = [];
         for (const [node, light] of this.visibleLights)

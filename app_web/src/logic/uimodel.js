@@ -28,7 +28,7 @@ class UIModel
         {
             dropdownGltfChanged = app.modelChanged$.pipe(
                 pluck("event", "msg"),
-                startWith("DamagedHelmet"),
+                startWith("StanfordDragon"),
                 map(value => {
                     app.flavours = this.pathProvider.getModelFlavours(value);
                     app.selectedFlavour = "glTF";
@@ -94,6 +94,8 @@ class UIModel
         this.iorEnabled = app.$watchAsObservable('iorEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.iridescenceEnabled = app.$watchAsObservable('iridescenceEnabled').pipe(
+                                            map( ({ newValue, oldValue }) => newValue));
+        this.diffuseTransmissionEnabled = app.$watchAsObservable('diffuseTransmissionEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));
         this.specularEnabled = app.$watchAsObservable('specularEnabled').pipe(
                                             map( ({ newValue, oldValue }) => newValue));

@@ -17,7 +17,7 @@ async function main()
     const state = view.createState();
     state.renderingParameters.useDirectionalLightsWithDisabledIBL = true;
 
-    const pathProvider = new gltfModelPathProvider('assets/models/2.0/model-index.json');
+    const pathProvider = new gltfModelPathProvider('assets/ux3dModels/model-index.json');
     await pathProvider.initialize();
     const environmentPaths = fillEnvironmentWithPaths({
         "footprint_court": "Footprint Court",
@@ -48,6 +48,8 @@ async function main()
 
             return from(resourceLoader.loadGltf(model.mainFile, model.additionalFiles).then( (gltf) => {
                 state.gltf = gltf;
+                gltf.initState(state);
+
                 const defaultScene = state.gltf.scene;
                 state.sceneIndex = defaultScene === undefined ? 0 : defaultScene;
                 state.cameraIndex = undefined;
@@ -59,21 +61,23 @@ async function main()
                     }
                     const scene = state.gltf.scenes[state.sceneIndex];
                     scene.applyTransformHierarchy(state.gltf);
-                    state.userCamera.aspectRatio = canvas.width / canvas.height;
+                    state.userCamera.perspective.aspectRatio.fallbackValue = canvas.width / canvas.height;
                     state.userCamera.fitViewToScene(state.gltf, state.sceneIndex);
 
                     // Try to start as many animations as possible without generating conficts.
                     state.animationIndices = [];
                     for (let i = 0; i < gltf.animations.length; i++)
                     {
-                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i))
-                        {
-                            state.animationIndices.push(i);
+                        if (!gltf.nonDisjointAnimations(state.animationIndices).includes(i)) {
+                            state.animations[i].timer.start();
+                        } else {
+                            state.animations[i].timer.stop();
                         }
+                        state.animationIndices.push(i);
                     }
-                    state.animationTimer.start();
                 }
 
+                view.isFirstRun = true;
                 uiModel.exitLoadingState();
 
                 return state;
@@ -215,6 +219,9 @@ async function main()
     uiModel.iridescenceEnabled.subscribe( iridescenceEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_iridescence = iridescenceEnabled;
     });
+    uiModel.diffuseTransmissionEnabled.subscribe( diffuseTransmissionEnabled => {
+        state.renderingParameters.enabledExtensions.KHR_materials_diffuse_transmission = diffuseTransmissionEnabled;
+    });
     uiModel.specularEnabled.subscribe( specularEnabled => {
         state.renderingParameters.enabledExtensions.KHR_materials_specular = specularEnabled;
     });
@@ -228,6 +235,7 @@ async function main()
     listenForRedraw(uiModel.iorEnabled);
     listenForRedraw(uiModel.specularEnabled);
     listenForRedraw(uiModel.iridescenceEnabled);
+    listenForRedraw(uiModel.diffuseTransmissionEnabled);
     listenForRedraw(uiModel.emissiveStrengthEnabled);
 
     uiModel.iblEnabled.subscribe( iblEnabled => {
@@ -282,16 +290,25 @@ async function main()
     uiModel.animationPlay.subscribe( animationPlay => {
         if(animationPlay)
         {
-            state.animationTimer.unpause();
+            state.animations.forEach( animation => animation.timer.continue());
         }
         else
         {
-            state.animationTimer.pause();
+            state.animations.forEach( animation => animation.timer.pause());
         }
     });
 
     uiModel.activeAnimations.subscribe( animations => {
-        state.animationIndices = animations;
+        // TODO this code does not yet work as intended with this of implementation of the KHR_behavior extension
+
+        // for (let i = 0; i < state.animationIndices.length; i++)
+        // {
+        //     if (animations.includes(i) && state.animations[i].timer.isStopped()) {
+        //         state.animations[i].timer.start();
+        //     } else {
+        //         state.animations[i].timer.stop();
+        //     }
+        // }
     });
     listenForRedraw(uiModel.activeAnimations);
 
@@ -299,7 +316,7 @@ async function main()
         resourceLoader.loadEnvironment(hdrFile).then( (environment) => {
             state.environment = environment;
             //We neeed to wait until the environment is loaded to redraw
-            redraw = true
+            redraw = true;
         });
     });
 
@@ -333,6 +350,28 @@ async function main()
     });
     listenForRedraw(uiModel.zoom);
 
+
+    addEventListener('keypress', (event) => {
+        if (event.key === "w") {
+            view.triggerEvent("up");
+        }
+        if (event.key === "s") {
+            view.triggerEvent("down");
+        }
+        if (event.key === " ") {
+            view.triggerEvent("space");
+        }
+        if (event.key === "1") {
+            view.triggerEvent("One");
+        }
+        if (event.key === "2") {
+            view.triggerEvent("Two");
+        }
+        if (event.key === "3") {
+            view.triggerEvent("Three");
+        }
+    });
+
     // configure the animation loop
     const past = {};
     const update = () =>
@@ -342,8 +381,9 @@ async function main()
         // set the size of the drawingBuffer based on the size it's displayed.
         canvas.width = Math.floor(canvas.clientWidth * devicePixelRatio);
         canvas.height = Math.floor(canvas.clientHeight * devicePixelRatio);
-        redraw |= !state.animationTimer.paused && state.animationIndices.length > 0;
+        redraw |= !state.animations.every(animation => animation.timer.isPaused()) && state.animationIndices.length > 0;
         redraw |= past.width != canvas.width || past.height != canvas.height;
+        redraw |= state.gltf && state.gltf.behaviors && state.gltf.behaviors.length > 0;
         past.width = canvas.width;
         past.height = canvas.height;
         

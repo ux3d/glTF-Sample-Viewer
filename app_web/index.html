@@ -145,6 +145,9 @@
                                     </option>
                                 </b-select>
                             </b-field>
+                            <div class="block">
+                                <a href="https://sketchfab.com/3d-models/light-switch-808c3de4dd874fc1b67ff15cd2645555">Light Switch</a> by Avot (CC Attribution)
+                            </div>
                             <b-field label="Flavor">
                                 <b-select v-model="selectedFlavour" v-stream:input="flavourChanged$">
                                     <option v-for="(item) in flavours" v-bind:value="item">
@@ -263,12 +266,12 @@
                         </div>
                     </b-tab-item>
 
-
+<!-- TODO this code does not yet work as intended with the KHR_behavior extension
+    
                     <b-tab-item label="Animation" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
                             <div @click="collapseActiveTab($event, 2)"
                                 v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
-                                <!-- to get colored icons use: https://stackoverflow.com/a/43916743 -->
                                 <img v-bind:src="[tabsHidden === false && activeTab === 2 ? 'assets/ui/Animation 50X50.svg' : 'assets/ui/Animation 30X30.svg']"
                                     v-bind:width="[tabsHidden === false && activeTab === 2 ? '50px' : '30px']"
                                     v-bind:style="[tabsHidden === false && activeTab === 2 ? {'height': '100%'} : {}]">
@@ -296,7 +299,7 @@
                             </b-field>
                         </div>
                     </b-tab-item>
-
+-->
 
                     <b-tab-item label="XMP" icon="video" class="tabItemScrollable tab-item">
                         <template #header>
@@ -396,6 +399,7 @@
                                 <b-switch class="smallerLabel" v-model="specularEnabled">KHR_materials_specular</b-switch>
                                 <b-switch class="smallerLabel" v-model="emissiveStrengthEnabled">KHR_materials_emissive_strength</b-switch>
                                 <b-switch class="smallerLabel" v-model="iridescenceEnabled">KHR_materials_iridescence</b-switch>
+                                <b-switch class="smallerLabel" v-model="diffuseTransmissionEnabled">KHR_materials_diffuse_transmission</b-switch>
                             </b-field>
                             <b-field label="Statistics" class="subtitle">
                                 <json-to-ui-template v-bind:data="statistics" v-bind:isinner="false">

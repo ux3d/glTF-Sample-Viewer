@@ -51,7 +51,7 @@ const app = new Vue({
         return {
             fullheight: true,
             right: true,
-            models: ["DamagedHelmet"],
+            models: ["StanfordDragon"],
             flavours: ["glTF", "glTF-Binary", "glTF-Quantized", "glTF-Draco", "glTF-pbrSpecularGlossiness"],
             scenes: [{title: "0"}, {title: "1"}],
             cameras: [{title: "User Camera", index: -1}],
@@ -63,7 +63,7 @@ const app = new Vue({
             xmp: [{title: "xmp"}],
             statistics: [],
 
-            selectedModel: "DamagedHelmet",
+            selectedModel: "StanfordDragon",
             selectedFlavour: "",
             selectedScene: {},
             selectedCamera: {},
@@ -93,6 +93,7 @@ const app = new Vue({
             volumeEnabled: true,
             iorEnabled: true,
             iridescenceEnabled: true,
+            diffuseTransmissionEnabled: true,
             specularEnabled: true,
             emissiveStrengthEnabled: true,
 
@@ -142,7 +143,8 @@ const app = new Vue({
     {
         setAnimationState: function(value)
         {
-            this.$refs.animationState.setState(value);
+            // TODO this code does not yet work as intended with the KHR_behavior extension
+            //this.$refs.animationState.setState(value);
         },
         iblTriggered: function(value)
         {

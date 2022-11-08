@@ -1,0 +1,70 @@
+[
+  {
+    "name": "AnimateAllTheThings",
+    "screenshot": null,
+    "variants": {
+      "glTF": "AnimateAllTheThings.gltf",
+      "glTF-Binary": "AnimateAllTheThings.glb"
+    }
+  },
+  {
+    "name": "AudioDuck",
+    "screenshot": null,
+    "variants": {
+      "glTF": "AudioDuck.gltf"
+    }
+  },
+  {
+    "name": "BehaviorLamp",
+    "screenshot": null,
+    "variants": {
+      "glTF": "BehaviorLamp.gltf",
+      "glTF-Binary": "BehaviorLamp.glb"
+    }
+  },
+  {
+    "name": "IridescenceDielectricSpheres",
+    "screenshot": "screenshot/screenshot.jpg",
+    "variants": {
+      "glTF": "IridescenceDielectricSpheres.gltf"
+    }
+  },
+  {
+    "name": "IridescenceMetallicSpheres",
+    "screenshot": "screenshot/screenshot.jpg",
+    "variants": {
+      "glTF": "IridescenceMetallicSpheres.gltf"
+    }
+  },
+  {
+    "name": "IridescentDance",
+    "screenshot": null,
+    "variants": {
+      "glTF": "Readyplayerme_Silly_Dancing_Iridescence.gltf",
+      "glTF-Binary": "Readyplayerme_Silly_Dancing_Iridescence.glb"
+    }
+  },
+  {
+    "name": "Leaf",
+    "screenshot": null,
+    "variants": {
+      "glTF": "leaf.gltf"
+    }
+  },
+  {
+    "name": "StanfordDragon",
+    "screenshot": null,
+    "variants": {
+      "glTF": "Dragon_Thickness_PunctualLights.gltf",
+      "glTF-Binary": "Dragon_Thickness_PunctualLights.glb"
+    }
+  },
+  {
+    "name": "Waterfall",
+    "screenshot": null,
+    "variants": {
+      "glTF": "Waterfall.gltf",
+      "glTF-Binary": "Waterfall.glb"
+    }
+  }
+]

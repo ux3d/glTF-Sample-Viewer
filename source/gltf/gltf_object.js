@@ -1,4 +1,4 @@
-import { initGlForMembers, fromKeys } from "./utils";
+import { initGlForMembers, initStateForMembers, fromKeys } from "./utils";
 
 // base class for all gltf objects
 class GltfObject
@@ -9,14 +9,19 @@ class GltfObject
         this.extras = undefined;
     }
 
-    fromJson(json)
+    fromJson(json, ignore = [])
     {
-        fromKeys(this, json);
+        fromKeys(this, json, ignore);
     }
 
     initGl(gltf, webGlContext)
     {
         initGlForMembers(this, gltf, webGlContext);
+    }
+
+    initState(state)
+    {
+        initStateForMembers(this, state);
     }
 }
 
