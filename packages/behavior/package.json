@@ -12,7 +12,8 @@
     "test": "run-s test_lint test_coverage",
     "test_lint": "tslint -c tslint.json 'src/**/*.ts'",
     "test_coverage": "jest --coverage",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "prepare": "run-s build"
   },
   "keywords": [],
   "author": "",
