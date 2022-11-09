@@ -782,7 +782,7 @@ class gltfMaterial extends GltfObject
 
     fromJsonDiffuseTransmission(json)
     {
-        makeAnimatable(this.extensions.KHR_materials_diffuse_transmission, json, {
+        makePointerTarget(this.extensions.KHR_materials_diffuse_transmission, json, {
             "diffuseTransmissionFactor": 0,
             "diffuseTransmissionColorFactor": [1, 1, 1],
         });
